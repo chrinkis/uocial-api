@@ -74,4 +74,26 @@ class AuthController extends Controller
             'token' => $token,
         ]);
     }
+
+    public function logout(Request $request): JsonResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'message' => 'You have been logged out',
+        ]);
+    }
+
+    public function revokeToken(Request $request): JsonResponse
+    {
+        assert($request->user() !== null);
+
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'You have been logged out',
+        ]);
+    }
 }

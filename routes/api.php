@@ -11,5 +11,7 @@ Route::get('/user', function (Request $request) {
 Route::prefix('auth')
     ->group(function () {
         Route::post('login', [AuthController::class, 'login']);
-        Route::post('token', [AuthController::class, 'getToken']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('token/generate', [AuthController::class, 'getToken']);
+        Route::post('token/revoke', [AuthController::class, 'revokeToken']);
     });
