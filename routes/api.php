@@ -15,4 +15,5 @@ Route::prefix('auth')
         Route::post('token/generate', [AuthController::class, 'getToken']);
         Route::post('token/revoke', [AuthController::class, 'revokeToken'])
             ->middleware('auth:sanctum');
+        Route::post('register', [AuthController::class, 'register']);
     });

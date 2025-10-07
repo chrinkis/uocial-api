@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 enum SessionType
@@ -94,6 +95,46 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'You have been logged out',
+        ]);
+    }
+
+    public function register(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'filled', 'string'],
+            'email' => ['required', 'email', 'ends_with:uoc.gr', 'unique:App\Models\User'],
+            'password' => ['required', 'string', 'confirmed'],
+            'stateless' => ['sometimes', 'nullable', 'string'],
+        ]);
+        assert(is_array($validated));
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ]);
+
+        if (Arr::has($validated, 'stateless')) {
+            $tokenName = $validated['stateless'] ?? 'token'.now()->timestamp;
+            assert(is_string($tokenName));
+
+            $token = $user->createToken($tokenName);
+
+            return response()->json([
+                'message' => 'Your account has been created',
+                'user' => $user,
+                'token' => $token,
+            ]);
+        }
+
+        // we are statefull here
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return response()->json([
+            'message' => 'Your account has been created',
+            'user' => $user,
         ]);
     }
 }
