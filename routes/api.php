@@ -13,5 +13,6 @@ Route::prefix('auth')
         Route::post('login', [AuthController::class, 'login']);
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('token/generate', [AuthController::class, 'getToken']);
-        Route::post('token/revoke', [AuthController::class, 'revokeToken']);
+        Route::post('token/revoke', [AuthController::class, 'revokeToken'])
+            ->middleware('auth:sanctum');
     });
