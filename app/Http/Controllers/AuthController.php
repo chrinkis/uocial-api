@@ -107,7 +107,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'filled', 'string'],
             'email' => ['required', 'email', 'ends_with:uoc.gr', 'unique:App\Models\User'],
-            'password' => ['required', 'string', 'confirmed'],
+            'password' => ['required', 'string', 'confirmed', new Password],
             'stateless' => ['sometimes', 'nullable', 'string'],
         ]);
         assert(is_array($validated));
@@ -168,7 +168,7 @@ class AuthController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => ['required', 'email', 'ends_with:uoc.gr'],
-            'password' => ['required', 'min:8', 'confirmed'],
+            'password' => ['required', 'min:8', 'confirmed', new Password],
         ]);
 
         $status = Password::reset(
