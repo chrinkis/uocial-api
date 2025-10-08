@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->trustHosts(at: fn () => config('app.trusted_hosts'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -123,4 +123,27 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Trusted Hosts
+    |--------------------------------------------------------------------------
+    |
+    | Used in `$middleware->trustHosts` in `bootstrap/app.php`.
+    |
+    */
+
+    'trusted_hosts' => env('TRUSTED_HOSTS') ? array_map('trim', explode(',', (string) env('TRUSTED_HOSTS'))) : [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | SPA Url
+    |--------------------------------------------------------------------------
+    |
+    | The url of the front end. Used for sending emails that contain link to
+    | it.
+    |
+    */
+
+    'spa_url' => env('SPA_URL', 'http://localhost'),
+
 ];

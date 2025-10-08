@@ -16,4 +16,10 @@ Route::prefix('auth')
         Route::post('token/revoke', [AuthController::class, 'revokeToken'])
             ->middleware('auth:sanctum');
         Route::post('register', [AuthController::class, 'register']);
+        Route::post('password/forgot', [AuthController::class, 'forgotPassword'])
+            ->middleware('guest')
+            ->name('password.email');
+        Route::post('password/reset', [AuthController::class, 'resetPassword'])
+            ->middleware('guest')
+            ->name('password.update');
     });
