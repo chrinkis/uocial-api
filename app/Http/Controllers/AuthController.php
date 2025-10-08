@@ -168,7 +168,7 @@ class AuthController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => ['required', 'email', 'ends_with:uoc.gr'],
-            'password' => ['required', 'min:12', 'confirmed', new Password],
+            'password' => ['required', 'string', 'min:12', 'confirmed', new Password],
         ]);
 
         $status = Password::reset(
