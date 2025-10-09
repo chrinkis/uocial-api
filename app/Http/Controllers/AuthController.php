@@ -209,4 +209,14 @@ class AuthController extends Controller
             'message' => 'You are now verified.',
         ]);
     }
+
+    public function resendVerification(Request $request): JsonResponse
+    {
+        assert($request->user() !== null);
+        $request->user()->sendEmailVerificationNotification();
+
+        return response()->json([
+            'message' => 'Verification link sent!',
+        ]);
+    }
 }

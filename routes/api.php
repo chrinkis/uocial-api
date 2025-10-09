@@ -25,4 +25,7 @@ Route::prefix('auth')
         Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
             ->middleware(['auth', 'signed'])
             ->name('verification.verify');
+        Route::post('/email/resend-verification', [AuthController::class, 'resendVerification'])
+            ->middleware(['auth', 'throttle:email-verification'])
+            ->name('verification.send');
     });
