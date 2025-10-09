@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Rules\Password as PasswordRule;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -119,6 +121,8 @@ class AuthController extends Controller
             'password' => $validated['password'],
         ]);
 
+        event(new Registered($user));
+
         if (Arr::has($validated, 'stateless')) {
             $tokenName = $validated['stateless'] ?? 'token'.now()->timestamp;
             assert(is_string($tokenName));
@@ -195,5 +199,14 @@ class AuthController extends Controller
         return response()->json([
             'message' => __($status),
         ], 422);
+    }
+
+    public function verifyEmail(EmailVerificationRequest $request): JsonResponse
+    {
+        $request->fulfill();
+
+        return response()->json([
+            'message' => 'You are now verified.',
+        ]);
     }
 }

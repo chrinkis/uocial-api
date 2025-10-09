@@ -22,4 +22,7 @@ Route::prefix('auth')
         Route::post('password/reset', [AuthController::class, 'resetPassword'])
             ->middleware('guest')
             ->name('password.update');
+        Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+            ->middleware(['auth', 'signed'])
+            ->name('verification.verify');
     });
