@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\Password as PasswordRule;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -107,7 +108,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'filled', 'string'],
             'email' => ['required', 'email', 'ends_with:uoc.gr', 'unique:App\Models\User'],
-            'password' => ['required', 'string', 'min:12', 'confirmed', new Password],
+            'password' => ['required', 'string', 'min:12', 'confirmed', new PasswordRule],
             'stateless' => ['sometimes', 'nullable', 'string'],
         ]);
         assert(is_array($validated));
@@ -168,7 +169,7 @@ class AuthController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => ['required', 'email', 'ends_with:uoc.gr'],
-            'password' => ['required', 'string', 'min:12', 'confirmed', new Password],
+            'password' => ['required', 'string', 'min:12', 'confirmed', new PasswordRule],
         ]);
 
         $status = Password::reset(
