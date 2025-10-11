@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -45,5 +49,27 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Scope a query to only include regular (who are also verified) users.
+     *
+     * @param  Builder<Model>  $query
+     */
+    #[Scope]
+    protected function regularVerified(Builder $query): void
+    {
+        $query->whereNotNull('email_verified_at');
+    }
+
+    /**
+     * Scope a query to only include moderators.
+     *
+     * @param  Builder<Model>  $query
+     */
+    #[Scope]
+    protected function moderators(Builder $query): void
+    {
+        $query->where('role', UserRole::Moderator);
     }
 }

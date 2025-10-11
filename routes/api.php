@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostContoller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +31,11 @@ Route::prefix('auth')
         Route::post('/email/resend-verification', [AuthController::class, 'resendVerification'])
             ->middleware(['auth', 'throttle:email-verification'])
             ->name('verification.send');
+    });
+
+Route::prefix('app')
+    ->middleware(['auth:sanctum', 'verified'])
+    ->group(function () {
+        Route::apiResource('posts', PostContoller::class)
+            ->only(['index']);
     });
