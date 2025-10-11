@@ -54,7 +54,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $email = strtolower(trim($request->input('email', '')));
+            $email = $request->input('email', '');
+            assert(is_string($email));
+            $email = strtolower(trim($email));
 
             return [
                 Limit::perMinutes(15, 5)
