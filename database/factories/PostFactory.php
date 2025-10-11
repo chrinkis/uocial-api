@@ -17,7 +17,7 @@ class PostFactory extends Factory
      */
     public function definition(): array
     {
-        $user_id = User::regularVerified()
+        $user_id = User::verified()
             ->inRandomOrder()
             ->value('id');
 

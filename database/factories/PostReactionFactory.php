@@ -21,7 +21,7 @@ class PostReactionFactory extends Factory
     {
         $reaction = rand(0, 8) ? PostReaction::Upvote : PostReaction::Downvote;
 
-        $user_id = User::RegularVerified()
+        $user_id = User::verified()
             ->inRandomOrder()
             ->value('id');
 

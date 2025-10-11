@@ -52,12 +52,12 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Scope a query to only include regular (who are also verified) users.
+     * Scope a query to only include verified users.
      *
      * @param  Builder<Model>  $query
      */
     #[Scope]
-    protected function regularVerified(Builder $query): void
+    protected function verified(Builder $query): void
     {
         $query->whereNotNull('email_verified_at');
     }
