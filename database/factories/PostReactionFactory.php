@@ -19,7 +19,7 @@ class PostReactionFactory extends Factory
      */
     public function definition(): array
     {
-        $reaction = rand(0, 1) ? PostReaction::Downvote : PostReaction::Upvote;
+        $reaction = rand(0, 8) ? PostReaction::Upvote : PostReaction::Downvote;
 
         $user_id = User::RegularVerified()
             ->inRandomOrder()
