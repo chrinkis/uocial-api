@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\ThreadReaction;
-use App\Models\Thread;
+use App\Enums\PostReaction;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -14,11 +14,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('thread_reactions', function (Blueprint $table) {
+        Schema::create('post_reactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Thread::class)->constrained();
+            $table->foreignIdFor(Post::class)->constrained();
             $table->foreignIdFor(User::class)->constrained();
-            $table->enum('reaction', ThreadReaction::cases());
+            $table->enum('reaction', PostReaction::cases());
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('thread_reactions');
+        Schema::dropIfExists('post_reactions');
     }
 };

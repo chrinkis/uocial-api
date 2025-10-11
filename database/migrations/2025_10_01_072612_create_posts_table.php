@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,14 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('thread_reports', function (Blueprint $table) {
+        Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Thread::class)->constrained();
             $table->foreignIdFor(User::class)->constrained();
-            $table->text('user_comment');
-            $table->foreignIdFor(User::class, 'reviewd_by_user_id')->nullable()->constrained();
-            $table->timestamp('reviewd_at')->nullable();
-            $table->text('reviewer_notes')->nullable();
+            $table->string('title');
+            $table->text('body');
+            $table->foreignIdFor(User::class, 'hidden_by_user_id')->nullable()->constrained();
+            $table->text('moderator_comment')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('thread_reports');
+        Schema::dropIfExists('posts');
     }
 };

@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum ThreadReaction
+enum PostReaction
 {
     case Upvote;
     case Downvote;

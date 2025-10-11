@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\User;
+use App\Models\Post;
+use App\Models\PostLabel;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,13 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('threads', function (Blueprint $table) {
+        Schema::create('post_post_label', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->constrained();
-            $table->string('title');
-            $table->text('body');
-            $table->foreignIdFor(User::class, 'hidden_by_user_id')->nullable()->constrained();
-            $table->text('moderator_comment')->nullable();
+            $table->foreignIdFor(Post::class)->constrained();
+            $table->foreignIdFor(PostLabel::class)->constrained();
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('threads');
+        Schema::dropIfExists('post_post_label');
     }
 };

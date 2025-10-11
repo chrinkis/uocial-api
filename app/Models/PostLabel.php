@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ThreadCommentReport extends Model
+class PostLabel extends Model
 {
     //
 }
