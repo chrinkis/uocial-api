@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class PostResource extends JsonResource
 {
@@ -26,6 +27,11 @@ class PostResource extends JsonResource
             'labels' => HashtagResource::collection(
                 $this::labels()
                     ->get()
+            ),
+            'reaction' => new PostReactionResource(
+                $this->reactions()
+                    ->whereBelongsTo(Auth::user())
+                    ->first()
             ),
         ];
     }

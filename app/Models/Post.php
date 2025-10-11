@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 #[ScopedBy([NonHiddenPostScope::class])]
@@ -33,5 +34,15 @@ class Post extends Model
     public function labels(): BelongsToMany
     {
         return $this->belongsToMany(PostLabel::class);
+    }
+
+    /**
+     * Get the reactions for the post.
+     *
+     * @return HasMany<PostReaction,$this>
+     */
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(PostReaction::class);
     }
 }
