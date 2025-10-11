@@ -28,11 +28,22 @@ class PostResource extends JsonResource
                 $this::labels()
                     ->get()
             ),
-            'reaction' => new PostReactionResource(
-                $this->reactions()
-                    ->whereBelongsTo(Auth::user())
-                    ->first()
-            ),
+            'reactions' => [
+                'user' => new PostReactionResource(
+                    $this->reactions()
+                        ->whereBelongsTo(Auth::user())
+                        ->first()
+                ),
+                'total' => [
+                    'upvotes' => $this->reactions()
+                        ->upvotes()
+                        ->count(),
+                    'downvotes' => $this->reactions()
+                        ->downvotes()
+                        ->count(),
+
+                ],
+            ],
         ];
     }
 }
