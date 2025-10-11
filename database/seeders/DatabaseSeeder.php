@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             HashtagSeeder::class,
             PostLabelSeeder::class,
             PostSeeder::class,
+            PostReactionSeeder::class,
         ]);
     }
 }
