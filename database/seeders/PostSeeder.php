@@ -32,5 +32,15 @@ class PostSeeder extends Seeder
             $post->hashtags()
                 ->attach($hashtags);
         }
+
+        foreach (Post::all() as $post) {
+            $label = PostLabel::inRandomOrder()
+                ->limit(rand(0, 1))
+                ->pluck('id')
+                ->toArray();
+
+            $post->labels()
+                ->attach($label);
+        }
     }
 }
