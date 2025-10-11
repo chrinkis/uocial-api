@@ -19,8 +19,14 @@ class PostResource extends JsonResource
             'title' => $this->title,
             'body' => $this->body,
             'created_at' => $this->created_at,
-            'hashtags' => $this::hashtags()->get(),
-            'labels' => $this::labels()->get(),
+            'hashtags' => HashtagResource::collection(
+                $this::hashtags()
+                    ->get()
+            ),
+            'labels' => HashtagResource::collection(
+                $this::labels()
+                    ->get()
+            ),
         ];
     }
 }
