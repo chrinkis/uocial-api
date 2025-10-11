@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(Post::class)->constrained();
             $table->foreignIdFor(User::class);
             $table->text('comment');
-            $table->foreignIdFor(User::class, 'hidden_by_user_id')->nullable()->constrained();
+            $table->foreignIdFor(User::class, 'hidden_by')->nullable()->constrained();
             $table->timestamps();
         });
     }

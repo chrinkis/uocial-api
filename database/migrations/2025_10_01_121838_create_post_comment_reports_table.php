@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(PostComment::class)->constrained();
             $table->foreignIdFor(User::class)->constrained();
             $table->text('user_comment');
-            $table->foreignIdFor(User::class, 'reviewd_by_user_id')->nullable()->constrained();
+            $table->foreignIdFor(User::class, 'reviewd_by')->nullable()->constrained();
             $table->timestamp('reviewd_at')->nullable();
             $table->text('reviewer_notes')->nullable();
             $table->timestamps();

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('reason');
             $table->timestamp('banned_at')->useCurrent();
             $table->timestamp('expires_at')->nullable();
-            $table->foreignIdFor(User::class, 'banned_by_user_id')->constrained();
+            $table->foreignIdFor(User::class, 'banned_by')->constrained();
             $table->boolean('is_active')->default(true);
             $table->text('notes')->nullable();
             $table->timestamps();

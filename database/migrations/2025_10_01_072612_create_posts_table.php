@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained();
             $table->string('title');
             $table->text('body');
-            $table->foreignIdFor(User::class, 'hidden_by_user_id')->nullable()->constrained();
+            $table->foreignIdFor(User::class, 'hidden_by')->nullable()->constrained();
             $table->text('moderator_comment')->nullable();
             $table->timestamps();
         });

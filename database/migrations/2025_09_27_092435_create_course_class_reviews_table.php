@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('lecture_presence_helpfulness')->nullable();
             $table->text('comment')->nullable();
             $table->softDeletes();
-            $table->foreignIdFor(User::class, 'hidden_by_user_id')->nullable()->constrained();
+            $table->foreignIdFor(User::class, 'hidden_by')->nullable()->constrained();
             $table->text('moderator_comment')->nullable();
             $table->timestamps();
 
