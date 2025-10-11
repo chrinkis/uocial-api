@@ -35,5 +35,18 @@ class UserSeeder extends Seeder
             ->state(['email' => 'admin@uoc.gr'])
             ->create();
 
+        User::factory()
+            ->unverified()
+            ->count(12)
+            ->create();
+
+        User::factory()
+            ->count(64)
+            ->create();
+
+        User::factory()
+            ->moderator()
+            ->count(8)
+            ->create();
     }
 }
