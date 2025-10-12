@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Models\PostComment;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +45,33 @@ class PostResource extends JsonResource
                         ->count(),
 
                 ],
+            ],
+            'comments' => [
+                'total' => $this->comments()
+                    ->count(),
+                'most_popular' => PostCommentResource::collection(
+                    $this->comments()
+                        ->withCount([
+                            'reactions as upvotes_count' => function (Builder $query) {
+                                $query->upvotes();
+                            },
+                            'reactions as downvotes_count' => function (Builder $query) {
+                                $query->downvotes();
+                            },
+                        ])
+                        ->get()
+                        ->sortByDesc(function (PostComment $comment) {
+                            return $comment->upvotes_count - $comment->downvotes_count;
+                        })
+                        ->take(3)
+                        ->values()
+                ),
+                'most_recent' => PostCommentResource::collection(
+                    $this->comments()
+                        ->orderByDesc('created_at')
+                        ->limit(3)
+                        ->get()
+                ),
             ],
         ];
     }

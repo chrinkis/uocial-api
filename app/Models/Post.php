@@ -45,4 +45,14 @@ class Post extends Model
     {
         return $this->hasMany(PostReaction::class);
     }
+
+    /**
+     * Get the comments for the post.
+     *
+     * @return HasMany<PostComment,$this>
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(PostComment::class);
+    }
 }
