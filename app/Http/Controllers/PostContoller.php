@@ -31,9 +31,11 @@ class PostContoller extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Post $post): void
+    public function show(Post $post): JsonResponse
     {
-        //
+        return response()->json([
+            'data' => new PostResource($post),
+        ]);
     }
 
     /**
