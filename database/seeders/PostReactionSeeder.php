@@ -16,7 +16,7 @@ class PostReactionSeeder extends Seeder
     {
         $numOfPosts = Post::count();
 
-        foreach (User::all() as $user) {
+        foreach (User::verified()->get() as $user) {
             $posts = Post::inRandomOrder()
                 ->limit(rand(0, $numOfPosts))
                 ->get();
