@@ -15,7 +15,7 @@ class PostContoller extends Controller
     public function index(): JsonResponse
     {
         $posts = Post::orderByDesc('id')
-            ->paginate(15);
+            ->paginate(8);
 
         return PostResource::collection($posts)
             ->response();
