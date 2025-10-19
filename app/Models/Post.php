@@ -55,4 +55,14 @@ class Post extends Model
     {
         return $this->hasMany(PostComment::class);
     }
+
+    /**
+     * The user who have save the post.
+     *
+     * @return BelongsToMany<User,$this,Pivot>
+     */
+    public function savedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'saved_posts');
+    }
 }

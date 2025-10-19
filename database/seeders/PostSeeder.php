@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Hashtag;
 use App\Models\Post;
 use App\Models\PostLabel;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PostSeeder extends Seeder
@@ -41,6 +42,14 @@ class PostSeeder extends Seeder
 
             $post->labels()
                 ->attach($label);
+
+            $users = User::inRandomOrder()
+                ->limit(rand(0, 2 * User::count() / 3))
+                ->pluck('id')
+                ->toArray();
+
+            $post->savedByUsers()
+                ->attach($users);
         }
     }
 }

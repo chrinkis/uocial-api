@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -71,5 +72,15 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function moderators(Builder $query): void
     {
         $query->where('role', UserRole::Moderator);
+    }
+
+    /**
+     * The post that user have saved.
+     *
+     * @return BelongsToMany<User,$this,Pivot>
+     */
+    public function savedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'saved_posts');
     }
 }
