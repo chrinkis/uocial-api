@@ -64,6 +64,9 @@ class PostResource extends JsonResource
                             return $comment->upvotes_count - $comment->downvotes_count;
                         })
                         ->take(3)
+                        ->filter(function (PostComment $comment) {
+                            return ($comment->upvotes_count - $comment->downvotes_count) > 0;
+                        })
                         ->values()
                 ),
                 'most_recent' => PostCommentResource::collection(
