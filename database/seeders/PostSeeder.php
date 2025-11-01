@@ -35,14 +35,6 @@ class PostSeeder extends Seeder
         }
 
         foreach (Post::all() as $post) {
-            $label = PostLabel::inRandomOrder()
-                ->limit(rand(0, 1))
-                ->pluck('id')
-                ->toArray();
-
-            $post->labels()
-                ->attach($label);
-
             $users = User::inRandomOrder()
                 ->limit(rand(0, 2 * User::count() / 3))
                 ->pluck('id')
@@ -50,6 +42,16 @@ class PostSeeder extends Seeder
 
             $post->savedByUsers()
                 ->attach($users);
+        }
+
+        foreach (Post::whereNull('location')->get() as $post) {
+            $label = PostLabel::inRandomOrder()
+                ->limit(rand(0, 1))
+                ->pluck('id')
+                ->toArray();
+
+            $post->labels()
+                ->attach($label);
         }
     }
 }

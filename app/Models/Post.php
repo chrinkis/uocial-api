@@ -17,6 +17,17 @@ class Post extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'title',
+        'location',
+        'body',
+    ];
+
+    /**
      * The hashtags that belong to the post.
      *
      * @return BelongsToMany<Hashtag,$this,Pivot>

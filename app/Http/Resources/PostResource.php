@@ -20,6 +20,7 @@ class PostResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
+            'location' => $this->location,
             'body' => $this->body,
             'created_at' => $this->created_at,
             'hashtags' => HashtagResource::collection(

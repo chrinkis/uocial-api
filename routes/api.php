@@ -37,5 +37,5 @@ Route::prefix('app')
     ->middleware(['auth:sanctum', 'verified'])
     ->group(function () {
         Route::apiResource('posts', PostContoller::class)
-            ->only(['index', 'show']);
+            ->only(['index', 'show', 'store']);
     });

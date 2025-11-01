@@ -15,13 +15,5 @@ class PostLabelSeeder extends Seeder
         PostLabel::factory()
             ->value('official')
             ->create();
-
-        PostLabel::factory()
-            ->value('rethymno')
-            ->create();
-
-        PostLabel::factory()
-            ->value('heraklion')
-            ->create();
     }
 }

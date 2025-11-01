@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PostLocation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -24,6 +25,7 @@ class PostFactory extends Factory
         return [
             'user_id' => $user_id,
             'title' => fake()->sentence(rand(1, 5)),
+            'location' => rand(0, 1) ? null : (rand(0, 1) ? PostLocation::Heraklion : PostLocation::Rethymno),
             'body' => fake()->text(rand(12, 1023)),
         ];
     }
