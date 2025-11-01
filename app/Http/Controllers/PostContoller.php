@@ -38,7 +38,15 @@ class PostContoller extends Controller
             'location' => ['nullable', Rule::enum(PostLocation::class)],
             'body' => ['required', 'string'],
             'hashtags' => ['nullable', 'list'],
-            'hashtags.*' => ['distinct'],
+            'hashtags.*' => [
+                'distinct',
+                function ($attribute, $value, $fail) {
+                    if (str_contains($value, '#')) {
+                        $fail("The $attribute cannot contain the # character.");
+                    }
+                },
+
+            ],
         ]);
 
         $post = Auth::user()->posts()
