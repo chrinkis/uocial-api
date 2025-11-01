@@ -20,6 +20,8 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained();
             $table->enum('reaction', PostReaction::cases());
             $table->timestamps();
+
+            $table->unique(['post_id', 'user_id']);
         });
     }
 

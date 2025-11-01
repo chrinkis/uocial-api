@@ -17,6 +17,10 @@ class PostResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $userReaction = $this->reactions()
+            ->whereBelongsTo(Auth::user())
+            ->first();
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -32,11 +36,7 @@ class PostResource extends JsonResource
                     ->get()
             ),
             'reactions' => [
-                'user' => new PostReactionResource(
-                    $this->reactions()
-                        ->whereBelongsTo(Auth::user())
-                        ->first()
-                ),
+                'user' => $userReaction ? new PostReactionResource($userReaction) : null,
                 'total' => [
                     'upvotes' => $this->reactions()
                         ->upvotes()

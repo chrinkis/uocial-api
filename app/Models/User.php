@@ -94,4 +94,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Post::class);
     }
+
+    /**
+     * The posts reactions of the user.
+     *
+     * @return HasMany<PostReaction,User>
+     */
+    public function postReactions(): HasMany
+    {
+        return $this->hasMany(PostReaction::class);
+    }
 }

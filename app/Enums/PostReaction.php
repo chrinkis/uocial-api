@@ -2,8 +2,8 @@
 
 namespace App\Enums;
 
-enum PostReaction
+enum PostReaction: string
 {
-    case Upvote;
-    case Downvote;
+    case Upvote = 'Upvote';
+    case Downvote = 'Downvote';
 }

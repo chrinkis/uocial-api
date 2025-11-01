@@ -38,4 +38,5 @@ Route::prefix('app')
     ->group(function () {
         Route::apiResource('posts', PostContoller::class)
             ->only(['index', 'show', 'store']);
+        Route::post('posts/{post}/react', [PostContoller::class, 'react']);
     });

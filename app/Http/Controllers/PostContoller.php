@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PostLocation;
+use App\Enums\PostReaction;
+use App\Http\Resources\PostReactionResource;
 use App\Http\Resources\PostResource;
 use App\Models\Hashtag;
 use App\Models\Post;
@@ -79,5 +81,44 @@ class PostContoller extends Controller
     public function destroy(Post $post): void
     {
         //
+    }
+
+    public function react(Request $request, Post $post): JsonResponse
+    {
+        $validated = $request->validate([
+            'reaction' => ['nullable', Rule::enum(PostReaction::class)],
+        ]);
+
+        Auth::user()->postReactions()
+            ->where('post_id', $post->id)
+            ->delete();
+
+        if (Arr::has($validated, 'reaction')) {
+            Auth::user()->postReactions()
+                ->create([
+                    'post_id' => $post->id,
+                    'reaction' => $validated['reaction'],
+                ]);
+        }
+
+        $userReaction = $post->reactions()
+            ->whereBelongsTo(Auth::user())
+            ->first();
+
+        return response()->json([
+            'message' => 'Reaction updated successfully',
+            'reactions' => [
+                'user' => $userReaction ? new PostReactionResource($userReaction) : null,
+                'total' => [
+                    'upvotes' => $post->reactions()
+                        ->upvotes()
+                        ->count(),
+                    'downvotes' => $post->reactions()
+                        ->downvotes()
+                        ->count(),
+
+                ],
+            ],
+        ]);
     }
 }

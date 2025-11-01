@@ -15,6 +15,16 @@ class PostReaction extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'post_id',
+        'reaction',
+    ];
+
+    /**
      * Get the user that owns the reaction.
      *
      * @return BelongsTo<User,$this>
