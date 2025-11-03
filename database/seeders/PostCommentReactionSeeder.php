@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Post;
-use App\Models\PostComment;
 use App\Models\PostCommentReaction;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -20,7 +19,8 @@ class PostCommentReactionSeeder extends Seeder
                 ->count();
 
             foreach (User::verified()->get() as $user) {
-                $comments = PostComment::inRandomOrder()
+                $comments = $post->comments()
+                    ->inRandomOrder()
                     ->limit(rand(0, $numOfComments))
                     ->get();
 
