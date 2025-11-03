@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostContoller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,4 +40,6 @@ Route::prefix('app')
         Route::apiResource('posts', PostContoller::class)
             ->only(['index', 'show', 'store']);
         Route::post('posts/{post}/react', [PostContoller::class, 'react']);
+        Route::apiResource('posts.comments', PostCommentController::class)
+            ->only(['index']);
     });
