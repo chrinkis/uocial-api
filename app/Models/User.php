@@ -104,4 +104,23 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PostReaction::class);
     }
+
+    /**
+     * Generate a pseudonym for this user within a specific context
+     *
+     * @param  int|string  $contextId  The ID of the owned resource
+     */
+    public function getPseudonymFor($contextId): string
+    {
+        $salt = config('app.pseudonym_salt');
+
+        // If salt has base64: prefix, decode it
+        if (str_starts_with($salt, 'base64:')) {
+            $salt = base64_decode(substr($salt, 7));
+        }
+
+        $data = "{$this->id}:{$contextId}";
+
+        return hash_hmac('sha256', $data, $salt);
+    }
 }

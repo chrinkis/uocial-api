@@ -33,6 +33,10 @@ class PostCommentResource extends JsonResource
                     ->downvotes()
                     ->count(),
             ],
+            'author' => [
+                'pseudonym' => $this->user->getPseudonymFor($this->id),
+                'is_post_author' => Auth::user()->id === $this->user->id,
+            ],
         ];
     }
 }
