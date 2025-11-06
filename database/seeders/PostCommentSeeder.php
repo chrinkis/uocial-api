@@ -28,5 +28,31 @@ class PostCommentSeeder extends Seeder
                     ->create();
             }
         }
+
+        $numOfComments = PostComment::count();
+        $commentsToReply = PostComment::inRandomOrder()
+            ->limit($numOfComments / 3)
+            ->get();
+
+        foreach ($commentsToReply as $commentToReply) {
+            PostComment::factory()
+                ->post($commentToReply->post)
+                ->replyTo($commentToReply)
+                ->create();
+        }
+
+        for ($i = 0; $i < 5; $i++) {
+            $commentsToReply = PostComment::whereNotNull('reply_to')
+                ->inRandomOrder()
+                ->limit(rand(8, $numOfComments / 3))
+                ->get();
+
+            foreach ($commentsToReply as $commentToReply) {
+                PostComment::factory()
+                    ->post($commentToReply->post)
+                    ->replyTo($commentToReply)
+                    ->create();
+            }
+        }
     }
 }

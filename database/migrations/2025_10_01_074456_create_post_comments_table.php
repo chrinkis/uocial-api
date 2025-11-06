@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Post;
+use App\Models\PostComment;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -19,6 +20,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class);
             $table->text('comment');
             $table->foreignIdFor(User::class, 'hidden_by')->nullable()->constrained();
+            $table->foreignIdFor(PostComment::class, 'reply_to')->nullable()->constrained();
             $table->timestamps();
         });
     }

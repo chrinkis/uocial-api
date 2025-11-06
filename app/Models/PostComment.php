@@ -31,4 +31,34 @@ class PostComment extends Model
     {
         return $this->hasMany(PostCommentReaction::class);
     }
+
+    /**
+     * Get the post that the comment belongs to.
+     *
+     * @return BelongsTo<Post,$this>
+     */
+    public function post(): BelongsTo
+    {
+        return $this->belongsTo(Post::class);
+    }
+
+    /**
+     * Get the comment that this comment is replying to.
+     *
+     * @return BelongsTo<PostComment,$this>
+     */
+    public function replyTo(): BelongsTo
+    {
+        return $this->belongsTo(PostComment::class, 'reply_to');
+    }
+
+    /**
+     * Get the replies to this comment.
+     *
+     * @return HasMany<PostComment,$this>
+     */
+    public function replies(): HasMany
+    {
+        return $this->hasMany(PostComment::class, 'reply_to');
+    }
 }

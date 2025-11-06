@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Post;
+use App\Models\PostComment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -49,6 +50,16 @@ class PostCommentFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'post_id' => $post->id,
+        ]);
+    }
+
+    /**
+     * Specifies the comment that replies to.
+     */
+    public function replyTo(PostComment $postComment): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'reply_to' => $postComment->id,
         ]);
     }
 }

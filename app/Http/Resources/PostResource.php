@@ -52,6 +52,7 @@ class PostResource extends JsonResource
                     ->count(),
                 'most_popular' => PostCommentResource::collection(
                     $this->comments()
+                        ->whereNull('reply_to')
                         ->withCount([
                             'reactions as upvotes_count' => function (Builder $query) {
                                 $query->upvotes();
@@ -72,6 +73,7 @@ class PostResource extends JsonResource
                 ),
                 'most_recent' => PostCommentResource::collection(
                     $this->comments()
+                        ->whereNull('reply_to')
                         ->orderByDesc('created_at')
                         ->limit(3)
                         ->get()

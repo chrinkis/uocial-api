@@ -16,6 +16,7 @@ class PostCommentController extends Controller
     public function index(Post $post): JsonResponse
     {
         $comments = $post->comments()
+            ->whereNull('reply_to')
             ->orderByDesc('id')
             ->paginate(8);
 
@@ -53,5 +54,18 @@ class PostCommentController extends Controller
     public function destroy(PostComment $postComment): void
     {
         //
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function replies(Post $post, PostComment $postComment): JsonResponse
+    {
+        $replies = $postComment->replies()
+            ->orderByDesc('id')
+            ->paginate(5);
+
+        return PostCommentResource::collection($replies)
+            ->response();
     }
 }
