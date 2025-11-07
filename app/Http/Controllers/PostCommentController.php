@@ -85,7 +85,7 @@ class PostCommentController extends Controller
     public function replies(Post $post, PostComment $postComment): JsonResponse
     {
         $replies = $postComment->replies()
-            ->orderByDesc('id')
+            ->orderBy('id')
             ->paginate(5);
 
         return PostCommentResource::collection($replies)
