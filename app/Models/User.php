@@ -123,4 +123,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return hash_hmac('sha256', $data, $salt);
     }
+
+    /**
+     * The post comments that user has created.
+     *
+     * @return HasMany<PostComment,$this>
+     */
+    public function postComments(): HasMany
+    {
+        return $this->hasMany(PostComment::class);
+    }
 }

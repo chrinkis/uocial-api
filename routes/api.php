@@ -41,6 +41,6 @@ Route::prefix('app')
             ->only(['index', 'show', 'store']);
         Route::post('posts/{post}/react', [PostContoller::class, 'react']);
         Route::apiResource('posts.comments', PostCommentController::class)
-            ->only(['index']);
+            ->only(['index', 'store']);
         Route::get('posts/{post}/comments/{postComment}/replies', [PostCommentController::class, 'replies']);
     });

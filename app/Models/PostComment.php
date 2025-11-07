@@ -13,6 +13,17 @@ class PostComment extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'comment',
+        'reply_to',
+        'post_id',
+    ];
+
+    /**
      * Get the user that created the comment.
      *
      * @return BelongsTo<User,$this>
