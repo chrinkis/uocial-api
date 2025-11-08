@@ -35,7 +35,7 @@ class PostCommentResource extends JsonResource
             ],
             'author' => [
                 'pseudonym' => $this->user->getPseudonymFor($this->post_id),
-                'is_post_author' => Auth::user()->id === $this->user->id,
+                'is_post_author' => $this->user->id === $this->post->user->id,
             ],
             'replies' => [
                 'count' => $this->replies->count(),
