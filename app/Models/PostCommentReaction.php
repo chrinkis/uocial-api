@@ -15,6 +15,16 @@ class PostCommentReaction extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'post_comment_id',
+        'reaction',
+    ];
+
+    /**
      * Get the user that owns the reaction.
      */
     public function user(): BelongsTo

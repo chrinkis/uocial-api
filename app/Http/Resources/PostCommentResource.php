@@ -26,12 +26,14 @@ class PostCommentResource extends JsonResource
                         ->whereBelongsTo(Auth::user())
                         ->first()
                 ),
-                'upvotes' => $this->reactions()
-                    ->upvotes()
-                    ->count(),
-                'downvotes' => $this->reactions()
-                    ->downvotes()
-                    ->count(),
+                'total' => [
+                    'upvotes' => $this->reactions()
+                        ->upvotes()
+                        ->count(),
+                    'downvotes' => $this->reactions()
+                        ->downvotes()
+                        ->count(),
+                ],
             ],
             'author' => [
                 'pseudonym' => $this->user->getPseudonymFor($this->post_id),

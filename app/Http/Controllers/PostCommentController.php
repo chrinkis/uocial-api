@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PostReaction;
 use App\Http\Resources\PostCommentResource;
+use App\Http\Resources\PostReactionResource;
 use App\Models\Post;
 use App\Models\PostComment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class PostCommentController extends Controller
 {
@@ -90,5 +94,44 @@ class PostCommentController extends Controller
 
         return PostCommentResource::collection($replies)
             ->response();
+    }
+
+    public function react(Request $request, Post $post, PostComment $postComment): JsonResponse
+    {
+        $validated = $request->validate([
+            'reaction' => ['nullable', Rule::enum(PostReaction::class)],
+        ]);
+
+        Auth::user()->postCommentReactions()
+            ->where('post_comment_id', $postComment->id)
+            ->delete();
+
+        if (Arr::has($validated, 'reaction')) {
+            Auth::user()->postCommentReactions()
+                ->create([
+                    'post_comment_id' => $postComment->id,
+                    'reaction' => $validated['reaction'],
+                ]);
+        }
+
+        $userReaction = $postComment->reactions()
+            ->whereBelongsTo(Auth::user())
+            ->first();
+
+        return response()->json([
+            'message' => 'Reaction updated successfully',
+            'reactions' => [
+                'user' => $userReaction ? new PostReactionResource($userReaction) : null,
+                'total' => [
+                    'upvotes' => $postComment->reactions()
+                        ->upvotes()
+                        ->count(),
+                    'downvotes' => $postComment->reactions()
+                        ->downvotes()
+                        ->count(),
+
+                ],
+            ],
+        ]);
     }
 }
