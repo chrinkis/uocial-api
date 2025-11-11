@@ -39,16 +39,6 @@ class Post extends Model
     }
 
     /**
-     * The labels that belong to the post.
-     *
-     * @return BelongsToMany<PostLabel,$this,Pivot>
-     */
-    public function labels(): BelongsToMany
-    {
-        return $this->belongsToMany(PostLabel::class);
-    }
-
-    /**
      * Get the reactions for the post.
      *
      * @return HasMany<PostReaction,$this>

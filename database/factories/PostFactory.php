@@ -44,4 +44,15 @@ class PostFactory extends Factory
             'moderator_comment' => fake()->sentence(rand(3, 8)),
         ]);
     }
+
+    /**
+     * Indicate that the post should be official.
+     */
+    public function official(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_official' => true,
+            'location' => null,
+        ]);
+    }
 }

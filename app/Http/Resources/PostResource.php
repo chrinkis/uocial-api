@@ -25,14 +25,11 @@ class PostResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'location' => $this->location,
+            'is_official' => $this->is_official,
             'body' => $this->body,
             'created_at' => $this->created_at,
             'hashtags' => HashtagResource::collection(
                 $this::hashtags()
-                    ->get()
-            ),
-            'labels' => HashtagResource::collection(
-                $this::labels()
                     ->get()
             ),
             'reactions' => [

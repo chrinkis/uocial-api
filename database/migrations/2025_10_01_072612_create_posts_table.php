@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained();
             $table->string('title');
             $table->enum('location', PostLocation::cases())->nullable();
+            $table->boolean('is_official')->default(false);
             $table->text('body');
             $table->foreignIdFor(User::class, 'hidden_by')->nullable()->constrained();
             $table->text('moderator_comment')->nullable();

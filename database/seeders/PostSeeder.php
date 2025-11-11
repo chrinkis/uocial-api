@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Hashtag;
 use App\Models\Post;
-use App\Models\PostLabel;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -45,13 +44,8 @@ class PostSeeder extends Seeder
         }
 
         foreach (Post::whereNull('location')->get() as $post) {
-            $label = PostLabel::inRandomOrder()
-                ->limit(rand(0, 1))
-                ->pluck('id')
-                ->toArray();
-
-            $post->labels()
-                ->attach($label);
+            $post->is_official = ! rand(0, 2);
+            $post->save();
         }
     }
 }
