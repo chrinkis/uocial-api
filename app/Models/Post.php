@@ -77,4 +77,14 @@ class Post extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the reports for the post.
+     *
+     * @return HasMany<PostReport,$this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(PostReport::class);
+    }
 }

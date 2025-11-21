@@ -24,6 +24,8 @@ return new class extends Migration
             $table->text('reviewer_notes')->nullable();
             $table->enum('review_status', ReportReviewStatus::cases())->nullable();
             $table->timestamps();
+
+            $table->unique(['post_id', 'user_id']);
         });
     }
 

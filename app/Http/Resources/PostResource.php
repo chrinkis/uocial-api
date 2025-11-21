@@ -82,6 +82,9 @@ class PostResource extends JsonResource
             'author' => [
                 'is_current_user' => Auth::user()->id === $this->user->id,
             ],
+            'reported_by_the_user' => $this->reports()
+                ->where('user_id', Auth::user()->id)
+                ->exists(),
         ];
     }
 }
