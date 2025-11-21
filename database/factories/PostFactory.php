@@ -31,21 +31,6 @@ class PostFactory extends Factory
     }
 
     /**
-     * Indicate that the post should be hidden.
-     */
-    public function hidden(): static
-    {
-        $moderator_id = User::moderators()
-            ->inRandomOrder()
-            ->value('id');
-
-        return $this->state(fn (array $attributes) => [
-            'hidden_by' => $moderator_id,
-            'moderator_comment' => fake()->sentence(rand(3, 8)),
-        ]);
-    }
-
-    /**
      * Indicate that the post should be official.
      */
     public function official(): static

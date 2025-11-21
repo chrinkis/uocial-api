@@ -13,6 +13,6 @@ class NonHiddenPostScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        $builder->whereNull('hidden_by');
+        // FIXME
     }
 }

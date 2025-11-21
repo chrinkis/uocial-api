@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ReportReviewStatus;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'reviewd_by')->nullable()->constrained();
             $table->timestamp('reviewd_at')->nullable();
             $table->text('reviewer_notes')->nullable();
+            $table->enum('review_status', ReportReviewStatus::cases())->nullable();
             $table->timestamps();
         });
     }

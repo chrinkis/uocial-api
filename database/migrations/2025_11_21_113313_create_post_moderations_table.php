@@ -1,6 +1,7 @@
 <?php
 
-use App\Enums\PostLocation;
+use App\Enums\ModerationAction;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,13 +14,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('posts', function (Blueprint $table) {
+        Schema::create('post_moderations', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->constrained();
-            $table->string('title');
-            $table->enum('location', PostLocation::cases())->nullable();
-            $table->boolean('is_official')->default(false);
-            $table->text('body');
+            $table->foreignIdFor(Post::class)->constrained();
+            $table->foreignIdFor(User::class)->nullable()->constrained();
+            $table->string('comment');
+            $table->enum('action', ModerationAction::cases());
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('posts');
+        Schema::dropIfExists('post_moderation');
     }
 };
