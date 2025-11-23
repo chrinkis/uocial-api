@@ -152,4 +152,17 @@ class PostContoller extends Controller
             'message' => 'Reported successfully',
         ]);
     }
+
+    /**
+     * Display a listing of the saved posts.
+     */
+    public function saved(): JsonResponse
+    {
+        $posts = Auth::user()->savedPosts()
+            ->orderByDesc('id')
+            ->paginate(8);
+
+        return PostResource::collection($posts)
+            ->response();
+    }
 }

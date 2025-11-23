@@ -37,6 +37,7 @@ Route::prefix('auth')
 Route::prefix('app')
     ->middleware(['auth:sanctum', 'verified'])
     ->group(function () {
+        Route::get('posts/saved', [PostContoller::class, 'saved']);
         Route::apiResource('posts', PostContoller::class)
             ->only(['index', 'show', 'store']);
         Route::post('posts/{post}/react', [PostContoller::class, 'react']);
