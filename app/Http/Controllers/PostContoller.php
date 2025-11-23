@@ -165,4 +165,24 @@ class PostContoller extends Controller
         return PostResource::collection($posts)
             ->response();
     }
+
+    public function save(Request $request, Post $post): JsonResponse
+    {
+        Auth::user()->savedPosts()
+            ->syncWithoutDetaching($post->id);
+
+        return response()->json([
+            'message' => 'Post saved successfully',
+        ]);
+    }
+
+    public function unsave(Request $request, Post $post): JsonResponse
+    {
+        Auth::user()->savedPosts()
+            ->detach($post->id);
+
+        return response()->json([
+            'message' => 'Post removed from saved',
+        ]);
+    }
 }

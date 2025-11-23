@@ -1,0 +1,15 @@
+meta {
+  name: save
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api}}/app/posts/1/save
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
