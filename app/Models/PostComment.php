@@ -72,4 +72,14 @@ class PostComment extends Model
     {
         return $this->hasMany(PostComment::class, 'reply_to');
     }
+
+    /**
+     * Get the reports of the comment.
+     *
+     * @return HasMany<PostCommentReport,$this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(PostCommentReport::class);
+    }
 }

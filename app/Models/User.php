@@ -153,4 +153,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PostReport::class);
     }
+
+    /**
+     * The post comment reports that user has created.
+     *
+     * @return HasMany<PostCommentReport,$this>
+     */
+    public function postCommentReports(): HasMany
+    {
+        return $this->hasMany(PostCommentReport::class);
+    }
 }

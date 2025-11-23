@@ -134,4 +134,27 @@ class PostCommentController extends Controller
             ],
         ]);
     }
+
+    public function report(Request $request, Post $post, PostComment $postComment): JsonResponse
+    {
+        $validated = $request->validate([
+            'comment' => ['required', 'filled', 'string'],
+        ]);
+
+        if ($postComment->reports()->where('user_id', Auth::user()->id)->exists()) {
+            return response()->json([
+                'message' => 'You have already reported this comment',
+            ], 409);
+        }
+
+        Auth::user()->postCommentReports()
+            ->create([
+                'post_comment_id' => $postComment->id,
+                'user_comment' => $validated['comment'],
+            ]);
+
+        return response()->json([
+            'message' => 'Reported successfully',
+        ]);
+    }
 }

@@ -43,6 +43,9 @@ class PostCommentResource extends JsonResource
             'replies' => [
                 'count' => $this->replies->count(),
             ],
+            'reported_by_the_user' => $this->reports()
+                ->where('user_id', Auth::user()->id)
+                ->exists(),
         ];
     }
 }

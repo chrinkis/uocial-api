@@ -45,4 +45,5 @@ Route::prefix('app')
             ->only(['index', 'store']);
         Route::get('posts/{post}/comments/{postComment}/replies', [PostCommentController::class, 'replies']);
         Route::post('posts/{post}/comments/{postComment}/react', [PostCommentController::class, 'react']);
+        Route::post('posts/{post}/comments/{postComment}/report', [PostCommentController::class, 'report']);
     });
