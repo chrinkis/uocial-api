@@ -50,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
     }
 
@@ -162,5 +163,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function postCommentReports(): HasMany
     {
         return $this->hasMany(PostCommentReport::class);
+    }
+
+    public function isModerator(): bool
+    {
+        return $this->role === UserRole::Admin || $this->role === UserRole::Moderator;
     }
 }

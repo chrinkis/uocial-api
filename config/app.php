@@ -147,4 +147,6 @@ return [
     'spa_url' => env('SPA_URL', 'http://localhost'),
 
     'pseudonym_salt' => env('PSEUDONYM_SALT') ?: throw new RuntimeException('PSEUDONYM_SALT environment variable is not set'),
+
+    'report_thrushold' => intval(env('REPORT_THRUSHOLD', '3')),
 ];

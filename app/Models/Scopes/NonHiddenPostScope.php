@@ -13,6 +13,16 @@ class NonHiddenPostScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        // FIXME
+        $builder->whereNotExists(function ($query) {
+            $query->selectRaw('1')
+                ->from('post_moderations')
+                ->whereColumn('post_moderations.post_id', 'posts.id')
+                ->where('post_moderations.action', 'hide')
+                ->whereRaw('post_moderations.created_at = (
+                    SELECT MAX(created_at)
+                    FROM post_moderations pm
+                    WHERE pm.post_id = posts.id
+                )');
+        });
     }
 }

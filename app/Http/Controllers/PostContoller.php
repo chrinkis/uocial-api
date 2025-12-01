@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PostLocation;
 use App\Enums\PostReaction;
+use App\Events\PostReported;
 use App\Http\Resources\PostReactionResource;
 use App\Http\Resources\PostResource;
 use App\Models\Hashtag;
@@ -147,6 +148,8 @@ class PostContoller extends Controller
                 'post_id' => $post->id,
                 'user_comment' => $validated['comment'],
             ]);
+
+        PostReported::dispatch($post);
 
         return response()->json([
             'message' => 'Reported successfully',
