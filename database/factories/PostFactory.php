@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\ModerationAction;
 use App\Enums\PostLocation;
+use App\Events\PostReported;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -39,5 +41,55 @@ class PostFactory extends Factory
             'is_official' => true,
             'location' => null,
         ]);
+    }
+
+    /**
+     * Indicate that the post has been reported.
+     */
+    public function withReports(): static
+    {
+        return $this->afterCreating(function ($post) {
+            $numberOfReports = rand(1, 5);
+
+            $users = User::verified()
+                ->inRandomOrder()
+                ->limit($numberOfReports)
+                ->get();
+
+            foreach ($users as $user) {
+                $user->postReports()->create([
+                    'post_id' => $post->id,
+                    'user_comment' => fake()->sentence(rand(5, 15)),
+                ]);
+            }
+
+            PostReported::dispatch($post);
+        });
+    }
+
+    /**
+     * Indicate that the post has been hiden by a moderator.
+     */
+    public function hidden(): static
+    {
+        return $this->afterCreating(function ($post) {
+            $post->moderations()->create([
+                'action' => ModerationAction::Hide,
+                'comment' => fake()->sentence(rand(5, 10)),
+            ]);
+        });
+    }
+
+    /**
+     * Indicate that the post has been unhiden by a moderator.
+     */
+    public function unhidden(): static
+    {
+        return $this->afterCreating(function ($post) {
+            $post->moderations()->create([
+                'action' => ModerationAction::Unhide,
+                'comment' => fake()->sentence(rand(5, 10)),
+            ]);
+        });
     }
 }

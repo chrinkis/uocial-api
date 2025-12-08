@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\PostLocation;
 use App\Enums\PostReaction;
-use App\Events\PostReported;
 use App\Http\Resources\PostReactionResource;
 use App\Http\Resources\PostResource;
 use App\Models\Hashtag;
 use App\Models\Post;
+use App\Models\Scopes\NonHiddenPostScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -71,9 +71,23 @@ class PostContoller extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Post $post): JsonResponse
+    public function show(string $post): JsonResponse
     {
-        return response()->json(new PostResource($post));
+        if (Auth::user()->isModerator()) {
+            return response()->json(
+                new PostResource(
+                    Post::withoutGlobalScope(
+                        NonHiddenPostScope::class)
+                        ->findOrFail($post)
+                )
+            );
+        } else {
+            return response()->json(
+                new PostResource(
+                    Post::findOrFail($post)
+                )
+            );
+        }
     }
 
     /**
@@ -131,31 +145,6 @@ class PostContoller extends Controller
         ]);
     }
 
-    public function report(Request $request, Post $post): JsonResponse
-    {
-        $validated = $request->validate([
-            'comment' => ['required', 'filled', 'string'],
-        ]);
-
-        if ($post->reports()->where('user_id', Auth::user()->id)->exists()) {
-            return response()->json([
-                'message' => 'You have already reported this post',
-            ], 409);
-        }
-
-        Auth::user()->postReports()
-            ->create([
-                'post_id' => $post->id,
-                'user_comment' => $validated['comment'],
-            ]);
-
-        PostReported::dispatch($post);
-
-        return response()->json([
-            'message' => 'Reported successfully',
-        ]);
-    }
-
     /**
      * Display a listing of the saved posts.
      */
@@ -187,5 +176,17 @@ class PostContoller extends Controller
         return response()->json([
             'message' => 'Post removed from saved',
         ]);
+    }
+
+    public function reported(): JsonResponse
+    {
+        $posts = Post::withoutGlobalScope(NonHiddenPostScope::class)
+            ->has('reports')
+            ->withCount('reports')
+            ->orderByDesc('reports_count')
+            ->paginate(8);
+
+        return PostResource::collection($posts)
+            ->response();
     }
 }

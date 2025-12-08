@@ -1,0 +1,29 @@
+meta {
+  name: admin
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api}}/auth/token/generate
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  email: admin@uoc.gr
+  password: password
+}
+
+body:multipart-form {
+  : @file()
+}
+
+script:post-response {
+  bru.setVar("token", res.body.token.plainTextToken);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

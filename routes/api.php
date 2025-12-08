@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostContoller;
+use App\Http\Controllers\PostReportController;
+use App\Http\Middleware\UserIsModerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -38,15 +40,30 @@ Route::prefix('app')
     ->middleware(['auth:sanctum', 'verified'])
     ->group(function () {
         Route::get('posts/saved', [PostContoller::class, 'saved']);
+
+        Route::get('posts/reported', [PostContoller::class, 'reported'])
+            ->middleware(UserIsModerator::class);
+
         Route::apiResource('posts', PostContoller::class)
             ->only(['index', 'show', 'store']);
+
         Route::post('posts/{post}/react', [PostContoller::class, 'react']);
-        Route::post('posts/{post}/report', [PostContoller::class, 'report']);
+
         Route::post('posts/{post}/save', [PostContoller::class, 'save']);
+
         Route::post('posts/{post}/unsave', [PostContoller::class, 'unsave']);
+
+        Route::get('posts/{post}/reports', [PostReportController::class, 'index'])
+            ->middleware(UserIsModerator::class);
+
+        Route::post('posts/{post}/reports', [PostReportController::class, 'store']);
+
         Route::apiResource('posts.comments', PostCommentController::class)
             ->only(['index', 'store']);
+
         Route::get('posts/{post}/comments/{postComment}/replies', [PostCommentController::class, 'replies']);
+
         Route::post('posts/{post}/comments/{postComment}/react', [PostCommentController::class, 'react']);
+
         Route::post('posts/{post}/comments/{postComment}/report', [PostCommentController::class, 'report']);
     });

@@ -18,6 +18,21 @@ class PostSeeder extends Seeder
             ->count(32)
             ->create();
 
+        Post::factory()
+            ->count(8)
+            ->withReports()
+            ->create();
+
+        Post::factory()
+            ->count(6)
+            ->hidden()
+            ->create();
+
+        Post::factory()
+            ->count(4)
+            ->unhidden()
+            ->create();
+
         foreach (Post::all() as $post) {
             $hashtags = Hashtag::inRandomOrder()
                 ->limit(rand(0, 12))
