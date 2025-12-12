@@ -169,4 +169,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->role === UserRole::Admin || $this->role === UserRole::Moderator;
     }
+
+    /**
+     * Get the reviews of post reports user has created.
+     *
+     * @return HasMany<PostReport,User>
+     */
+    public function postReportReviews(): HasMany
+    {
+        return $this->hasMany(PostReportReview::class);
+    }
 }

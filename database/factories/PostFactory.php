@@ -59,7 +59,7 @@ class PostFactory extends Factory
             foreach ($users as $user) {
                 $user->postReports()->create([
                     'post_id' => $post->id,
-                    'user_comment' => fake()->sentence(rand(5, 15)),
+                    'comment' => fake()->sentence(rand(5, 15)),
                 ]);
             }
 

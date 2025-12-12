@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PostReport extends Model
 {
@@ -13,8 +14,16 @@ class PostReport extends Model
      */
     protected $fillable = [
         'post_id',
-        'user_comment',
-        'reviewer_notes',
-        'review_status',
+        'comment',
     ];
+
+    /**
+     * Get the reviews of the report.
+     *
+     * @return HasMany<PostCommentReport,$this>
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(PostReportReview::class);
+    }
 }

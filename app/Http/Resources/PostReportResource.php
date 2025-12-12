@@ -18,11 +18,10 @@ class PostReportResource extends JsonResource
         return [
             'id' => $this->id,
             'post_id' => $this->post_id,
-            'user_comment' => $this->user_comment,
-            'reviewed_by_you' => $this->reviewd_by === Auth::user()->id,
-            'reviewed_at' => $this->reviewed_at,
-            'reviewer_notes' => $this->reviewer_notes,
-            'review_status' => $this->review_status,
+            'comment' => $this->comment,
+            'reviewed_by_you' => $this->reviews()
+                ->whereBelongsTo(Auth::user())
+                ->exists(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

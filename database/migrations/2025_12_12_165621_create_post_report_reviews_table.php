@@ -1,6 +1,7 @@
 <?php
 
-use App\Models\Post;
+use App\Enums\ReportReviewStatus;
+use App\Models\PostReport;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,14 +14,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('post_reports', function (Blueprint $table) {
+        Schema::create('post_report_reviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Post::class)->constrained();
+            $table->foreignIdFor(PostReport::class)->constrained();
             $table->foreignIdFor(User::class)->constrained();
             $table->text('comment');
+            $table->enum('review_status', ReportReviewStatus::cases())->nullable();
             $table->timestamps();
 
-            $table->unique(['post_id', 'user_id']);
+            $table->unique(['post_report_id', 'user_id']);
         });
     }
 
@@ -29,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('post_reports');
+        Schema::dropIfExists('post_report_reviews');
     }
 };

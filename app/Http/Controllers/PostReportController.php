@@ -48,7 +48,7 @@ class PostReportController extends Controller
         Auth::user()->postReports()
             ->create([
                 'post_id' => $post->id,
-                'user_comment' => $validated['comment'],
+                'comment' => $validated['comment'],
             ]);
 
         PostReported::dispatch($post);
