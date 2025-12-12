@@ -61,9 +61,9 @@ class PostFactory extends Factory
                     'post_id' => $post->id,
                     'comment' => fake()->sentence(rand(5, 15)),
                 ]);
-            }
 
-            PostReported::dispatch($post);
+                PostReported::dispatch($post);
+            }
         });
     }
 
