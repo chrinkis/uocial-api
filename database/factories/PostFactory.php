@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\ModerationAction;
 use App\Enums\PostLocation;
+use App\Enums\ReportReviewStatus;
 use App\Events\PostReported;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -57,12 +58,27 @@ class PostFactory extends Factory
                 ->get();
 
             foreach ($users as $user) {
-                $user->postReports()->create([
+                $report = $user->postReports()->create([
                     'post_id' => $post->id,
                     'comment' => fake()->sentence(rand(5, 15)),
                 ]);
 
                 PostReported::dispatch($post);
+
+                $isReviewed = fake()->boolean();
+                if (! $isReviewed) {
+                    continue;
+                }
+
+                User::moderators()
+                    ->inRandomOrder()
+                    ->first()
+                    ->postReportReviews()
+                    ->create([
+                        'post_report_id' => $report->id,
+                        'comment' => fake()->sentence(rand(5, 15)),
+                        'status' => fake()->boolean() ? ReportReviewStatus::Valid : ReportReviewStatus::Invalid,
+                    ]);
             }
         });
     }
