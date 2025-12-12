@@ -23,6 +23,7 @@ class PostReportController extends Controller
             ->findOrFail($post);
 
         $reports = $post->reports()
+            ->whereDoesntHave('reviews')
             ->orderByDesc('id')
             ->paginate(8);
 
