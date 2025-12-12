@@ -1,0 +1,15 @@
+meta {
+  name: review
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api}}/app/posts/1/reports/1/reviews
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

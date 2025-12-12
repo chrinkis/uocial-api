@@ -16,7 +16,7 @@ class PostReportReview extends Model
     protected $fillable = [
         'post_report_id',
         'comment',
-        'review_status',
+        'status',
     ];
 
     /**

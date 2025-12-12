@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(PostReport::class)->constrained();
             $table->foreignIdFor(User::class)->constrained();
             $table->text('comment');
-            $table->enum('review_status', ReportReviewStatus::cases())->nullable();
+            $table->enum('status', ReportReviewStatus::cases())->nullable();
             $table->timestamps();
 
             $table->unique(['post_report_id', 'user_id']);
