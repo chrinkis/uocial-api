@@ -73,7 +73,8 @@ class User extends Authenticatable implements MustVerifyEmail
     #[Scope]
     protected function moderators(Builder $query): void
     {
-        $query->where('role', UserRole::Moderator);
+        $query->where('role', UserRole::Moderator)
+            ->orWhere('role', UserRole::Admin);
     }
 
     /**
