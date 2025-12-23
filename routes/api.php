@@ -42,9 +42,6 @@ Route::prefix('app')
     ->group(function () {
         Route::get('posts/saved', [PostContoller::class, 'saved']);
 
-        Route::get('posts/reported', [PostContoller::class, 'reported'])
-            ->middleware(UserIsModerator::class);
-
         Route::apiResource('posts', PostContoller::class)
             ->only(['index', 'show', 'store']);
 

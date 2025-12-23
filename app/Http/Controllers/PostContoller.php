@@ -19,11 +19,28 @@ class PostContoller extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * params:
+     *   - reported?: boolean
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $posts = Post::orderByDesc('id')
-            ->paginate(8);
+        if ($request->boolean('reported')) {
+            if (! Auth::user()->isModerator()) {
+                return response()->json([
+                    'message' => 'Only moderators have access to reports',
+                ], 403);
+            }
+
+            $posts = Post::withoutGlobalScope(NonHiddenPostScope::class)
+                ->has('reports')
+                ->withCount('reports')
+                ->orderByDesc('reports_count')
+                ->paginate(8);
+        } else {
+            $posts = Post::orderByDesc('id')
+                ->paginate(8);
+        }
 
         return PostResource::collection($posts)
             ->response();
@@ -176,17 +193,5 @@ class PostContoller extends Controller
         return response()->json([
             'message' => 'Post removed from saved',
         ]);
-    }
-
-    public function reported(): JsonResponse
-    {
-        $posts = Post::withoutGlobalScope(NonHiddenPostScope::class)
-            ->has('reports')
-            ->withCount('reports')
-            ->orderByDesc('reports_count')
-            ->paginate(8);
-
-        return PostResource::collection($posts)
-            ->response();
     }
 }

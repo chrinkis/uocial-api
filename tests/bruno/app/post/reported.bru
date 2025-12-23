@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: {{api}}/app/posts/reported
+  url: {{api}}/app/posts?reported=true
   body: none
   auth: inherit
+}
+
+params:query {
+  reported: true
 }
 
 settings {
