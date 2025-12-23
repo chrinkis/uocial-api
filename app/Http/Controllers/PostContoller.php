@@ -22,9 +22,12 @@ class PostContoller extends Controller
      *
      * params:
      *   - reported?: boolean
+     *   - pending_review?: boolean
      */
     public function index(Request $request): JsonResponse
     {
+        $posts = Post::query();
+
         if ($request->boolean('reported')) {
             if (! Auth::user()->isModerator()) {
                 return response()->json([
@@ -32,17 +35,35 @@ class PostContoller extends Controller
                 ], 403);
             }
 
-            $posts = Post::withoutGlobalScope(NonHiddenPostScope::class)
+            $posts->withoutGlobalScope(NonHiddenPostScope::class)
                 ->has('reports')
                 ->withCount('reports')
-                ->orderByDesc('reports_count')
-                ->paginate(8);
-        } else {
-            $posts = Post::orderByDesc('id')
-                ->paginate(8);
+                ->orderByDesc('reports_count');
         }
 
-        return PostResource::collection($posts)
+        if ($request->boolean('pending_review')) {
+            if (! Auth::user()->isModerator()) {
+                return response()->json([
+                    'message' => 'Only moderators have access to moderation reviews',
+                ], 403);
+            }
+
+            $posts->withoutGlobalScope(NonHiddenPostScope::class)
+                ->whereHas('moderations', function ($query) {
+                    $query->whereNull('user_id')
+                        ->whereRaw('created_at = (
+                            SELECT MAX(created_at)
+                            FROM post_moderations
+                            WHERE post_moderations.post_id = posts.id
+                        )');
+                });
+        }
+
+        if (! $request->boolean('reported') && ! $request->boolean('pending_review')) {
+            $posts->orderByDesc('id');
+        }
+
+        return PostResource::collection($posts->paginate(8))
             ->response();
     }
 
