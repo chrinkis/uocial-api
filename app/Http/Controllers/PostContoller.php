@@ -23,6 +23,7 @@ class PostContoller extends Controller
      * params:
      *   - reported?: boolean
      *   - pending_review?: boolean
+     *   - hashtag?: string
      */
     public function index(Request $request): JsonResponse
     {
@@ -57,6 +58,12 @@ class PostContoller extends Controller
                             WHERE post_moderations.post_id = posts.id
                         )');
                 });
+        }
+
+        if ($request->has('hashtag')) {
+            $posts->whereHas('hashtags', function ($query) use ($request) {
+                $query->whereRaw('LOWER(name) = ?', [strtolower($request->input('hashtag'))]);
+            });
         }
 
         if (! $request->boolean('reported') && ! $request->boolean('pending_review')) {
