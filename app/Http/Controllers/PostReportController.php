@@ -15,16 +15,27 @@ class PostReportController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * params:
+     *   - reviewed?: boolean
      */
-    public function index(string $post): JsonResponse
+    public function index(Request $request, string $post): JsonResponse
     {
         $post = Post::withoutGlobalScope(
             NonHiddenPostScope::class)
             ->findOrFail($post);
 
-        $reports = $post->reports()
-            ->whereDoesntHave('reviews')
-            ->orderByDesc('id')
+        $reports = $post->reports();
+
+        if ($request->has('reviewed')) {
+            if ($request->boolean('reviewed')) {
+                $reports->whereHas('reviews');
+            } else {
+                $reports->whereDoesntHave('reviews');
+            }
+        }
+
+        $reports = $reports->orderByDesc('id')
             ->paginate(8);
 
         return PostReportResource::collection($reports)
