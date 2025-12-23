@@ -85,6 +85,8 @@ class PostResource extends JsonResource
             'reported_by_the_user' => $this->reports()
                 ->where('user_id', Auth::user()->id)
                 ->exists(),
+            'is_hidden' => $this->isHidden(),
+            'is_auto_hidden' => $this->isAutoHidden(),
         ];
     }
 }

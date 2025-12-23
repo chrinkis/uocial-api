@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostContoller;
+use App\Http\Controllers\PostModerationController;
 use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
 use App\Http\Middleware\UserIsModerator;
@@ -57,6 +58,10 @@ Route::prefix('app')
         Route::post('posts/{post}/reports', [PostReportController::class, 'store']);
 
         Route::apiResource('posts.reports.reviews', PostReportReviewController::class)
+            ->only(['store'])
+            ->middleware(UserIsModerator::class);
+
+        Route::apiResource('posts.moderations', PostModerationController::class)
             ->only(['store'])
             ->middleware(UserIsModerator::class);
 
