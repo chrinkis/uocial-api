@@ -24,13 +24,23 @@ class PostSeeder extends Seeder
             ->create();
 
         Post::factory()
-            ->count(6)
-            ->hidden()
+            ->count(3)
+            ->hidden(false)
             ->create();
 
         Post::factory()
-            ->count(4)
-            ->unhidden()
+            ->count(3)
+            ->hidden(true)
+            ->create();
+
+        Post::factory()
+            ->count(2)
+            ->unhidden(false)
+            ->create();
+
+        Post::factory()
+            ->count(2)
+            ->unhidden(true)
             ->create();
 
         foreach (Post::all() as $post) {

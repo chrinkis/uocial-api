@@ -86,26 +86,53 @@ class PostFactory extends Factory
     /**
      * Indicate that the post has been hiden by a moderator.
      */
-    public function hidden(): static
+    public function hidden(bool $system): static
     {
-        return $this->afterCreating(function ($post) {
-            $post->moderations()->create([
-                'action' => ModerationAction::Hide,
-                'comment' => fake()->sentence(rand(5, 10)),
-            ]);
-        });
+        if ($system) {
+            return $this->afterCreating(function ($post) {
+                $post->moderations()->create([
+                    'action' => ModerationAction::Hide,
+                    'comment' => fake()->sentence(rand(5, 10)),
+                ]);
+
+            });
+        } else {
+            return $this->afterCreating(function ($post) {
+                User::moderators()->inRandomOrder()
+                    ->first()
+                    ->postModerations()
+                    ->create([
+                        'action' => ModerationAction::Hide,
+                        'comment' => fake()->sentence(rand(5, 10)),
+                        'post_id' => $post->id,
+                    ]);
+            });
+        }
     }
 
     /**
      * Indicate that the post has been unhiden by a moderator.
      */
-    public function unhidden(): static
+    public function unhidden(bool $system): static
     {
-        return $this->afterCreating(function ($post) {
-            $post->moderations()->create([
-                'action' => ModerationAction::Unhide,
-                'comment' => fake()->sentence(rand(5, 10)),
-            ]);
-        });
+        if ($system) {
+            return $this->afterCreating(function ($post) {
+                $post->moderations()->create([
+                    'action' => ModerationAction::Unhide,
+                    'comment' => fake()->sentence(rand(5, 10)),
+                ]);
+            });
+        } else {
+            return $this->afterCreating(function ($post) {
+                User::moderators()->inRandomOrder()
+                    ->first()
+                    ->postModerations()
+                    ->create([
+                        'action' => ModerationAction::Unhide,
+                        'comment' => fake()->sentence(rand(5, 10)),
+                        'post_id' => $post->id,
+                    ]);
+            });
+        }
     }
 }
