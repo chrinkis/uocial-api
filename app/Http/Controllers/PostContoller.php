@@ -8,6 +8,7 @@ use App\Http\Resources\PostReactionResource;
 use App\Http\Resources\PostResource;
 use App\Models\Hashtag;
 use App\Models\Post;
+use App\Models\PostModeration;
 use App\Models\Scopes\NonHiddenPostScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,34 +24,42 @@ class PostContoller extends Controller
      * params:
      *   - reported?: boolean
      *   - pending_review?: boolean
+     *   - pending_reports?: boolean
      *   - hashtag?: string
      */
     public function index(Request $request): JsonResponse
     {
         $posts = Post::query();
 
-        if ($request->boolean('reported')) {
+        if ($request->has('reported')) {
             if (! Auth::user()->isModerator()) {
                 return response()->json([
                     'message' => 'Only moderators have access to reports',
                 ], 403);
             }
 
-            $posts->withoutGlobalScope(NonHiddenPostScope::class)
-                ->has('reports')
-                ->withCount('reports')
-                ->orderByDesc('reports_count');
+            $posts->withoutGlobalScope(NonHiddenPostScope::class);
+
+            if ($request->boolean('reported')) {
+                $posts->has('reports')
+                    ->withCount('reports')
+                    ->orderByDesc('reports_count');
+            } else {
+                $posts->doesntHave('reports');
+            }
         }
 
-        if ($request->boolean('pending_review')) {
+        if ($request->has('pending_review')) {
             if (! Auth::user()->isModerator()) {
                 return response()->json([
                     'message' => 'Only moderators have access to moderation reviews',
                 ], 403);
             }
 
-            $posts->withoutGlobalScope(NonHiddenPostScope::class)
-                ->whereHas('moderations', function ($query) {
+            $posts->withoutGlobalScope(NonHiddenPostScope::class);
+
+            if ($request->boolean('pending_review')) {
+                $posts->whereHas('moderations', function ($query) {
                     $query->whereNull('user_id')
                         ->whereRaw('created_at = (
                             SELECT MAX(created_at)
@@ -58,6 +67,51 @@ class PostContoller extends Controller
                             WHERE post_moderations.post_id = posts.id
                         )');
                 });
+            } else {
+                $posts->whereHas('moderations', function ($query) {
+                    $query->whereNotNull('user_id')
+                        ->whereRaw('created_at = (
+                            SELECT MAX(created_at)
+                            FROM post_moderations
+                            WHERE post_moderations.post_id = posts.id
+                        )');
+                })
+                    ->addSelect(['latest_moderation_at' => PostModeration::select('created_at')
+                        ->whereColumn('post_id', 'posts.id')
+                        ->orderByDesc('created_at')
+                        ->limit(1),
+                    ])
+                    ->orderByDesc('latest_moderation_at');
+            }
+        }
+
+        if ($request->has('pending_reports')) {
+            if (! Auth::user()->isModerator()) {
+                return response()->json([
+                    'message' => 'Only moderators have access to report reviews',
+                ], 403);
+            }
+
+            $posts->withoutGlobalScope(NonHiddenPostScope::class);
+
+            if ($request->boolean('pending_reports')) {
+                $posts->whereHas('reports', function ($query) {
+                    $query->doesntHave('reviews');
+                })
+                    ->withCount('reports')
+                    ->orderByDesc('reports_count');
+            } else {
+                $posts->whereDoesntHave('reports', function ($query) {
+                    $query->doesntHave('reviews');
+                })->has('reports')
+                ->addSelect(['latest_report_review_at' => \App\Models\PostReport::select('post_report_reviews.created_at')
+                    ->join('post_report_reviews', 'post_reports.id', '=', 'post_report_reviews.post_report_id')
+                    ->whereColumn('post_reports.post_id', 'posts.id')
+                    ->orderByDesc('post_report_reviews.created_at')
+                    ->limit(1),
+                ])
+                ->orderByDesc('latest_report_review_at');
+            }
         }
 
         if ($request->has('hashtag')) {
@@ -66,7 +120,7 @@ class PostContoller extends Controller
             });
         }
 
-        if (! $request->boolean('reported') && ! $request->boolean('pending_review')) {
+        if (! $request->boolean('reported') && ! $request->boolean('pending_review') && ! $request->boolean('pending_reports')) {
             $posts->orderByDesc('id');
         }
 
