@@ -19,9 +19,10 @@ class PostReportResource extends JsonResource
             'id' => $this->id,
             'post_id' => $this->post_id,
             'comment' => $this->comment,
-            'reviewed_by_you' => $this->reviews()
+            'user_review' => $this->reviews()
                 ->whereBelongsTo(Auth::user())
-                ->exists(),
+                ->first()
+                ?->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
