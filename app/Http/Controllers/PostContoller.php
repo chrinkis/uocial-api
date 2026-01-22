@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\PostLocation;
 use App\Enums\PostReaction;
+use App\Http\Resources\PostCommentResource;
 use App\Http\Resources\PostReactionResource;
 use App\Http\Resources\PostResource;
 use App\Models\Hashtag;
 use App\Models\Post;
+use App\Models\PostComment;
+use App\Models\PostCommentModeration;
+use App\Models\PostCommentReport;
 use App\Models\PostModeration;
+use App\Models\Scopes\NonHiddenPostCommentScope;
 use App\Models\Scopes\NonHiddenPostScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -125,6 +130,109 @@ class PostContoller extends Controller
         }
 
         return PostResource::collection($posts->paginate(8))
+            ->response();
+    }
+
+    /**
+     * Display a listing of the comments.
+     *
+     * params:
+     *   - reported?: boolean
+     *   - pending_review?: boolean
+     *   - pending_reports?: boolean
+     */
+    public function comments(Request $request): JsonResponse
+    {
+        $comments = PostComment::query();
+
+        if ($request->has('reported')) {
+            if (! Auth::user()->isModerator()) {
+                return response()->json([
+                    'message' => 'Only moderators have access to reports',
+                ], 403);
+            }
+
+            $comments->withoutGlobalScope(NonHiddenPostCommentScope::class);
+
+            if ($request->boolean('reported')) {
+                $comments->has('reports')
+                    ->withCount('reports')
+                    ->orderByDesc('reports_count');
+            } else {
+                $comments->doesntHave('reports');
+            }
+        }
+
+        if ($request->has('pending_review')) {
+            if (! Auth::user()->isModerator()) {
+                return response()->json([
+                    'message' => 'Only moderators have access to moderation reviews',
+                ], 403);
+            }
+
+            $comments->withoutGlobalScope(NonHiddenPostCommentScope::class);
+
+            if ($request->boolean('pending_review')) {
+                $comments->whereHas('moderations', function ($query) {
+                    $query->whereNull('user_id')
+                        ->whereRaw('created_at = (
+                            SELECT MAX(created_at)
+                            FROM post_comment_moderations
+                            WHERE post_comment_moderations.post_comment_id = post_comments.id
+                        )');
+                });
+            } else {
+                $comments->whereHas('moderations', function ($query) {
+                    $query->whereNotNull('user_id')
+                        ->whereRaw('created_at = (
+                            SELECT MAX(created_at)
+                            FROM post_comment_moderations
+                            WHERE post_comment_moderations.post_comment_id = post_comments.id
+                        )');
+                })
+                    ->addSelect(['latest_moderation_at' => PostCommentModeration::select('created_at')
+                        ->whereColumn('post_comment_id', 'post_comments.id')
+                        ->orderByDesc('created_at')
+                        ->limit(1),
+                    ])
+                    ->orderByDesc('latest_moderation_at');
+            }
+        }
+
+        if ($request->has('pending_reports')) {
+            if (! Auth::user()->isModerator()) {
+                return response()->json([
+                    'message' => 'Only moderators have access to report reviews',
+                ], 403);
+            }
+
+            $comments->withoutGlobalScope(NonHiddenPostCommentScope::class);
+
+            if ($request->boolean('pending_reports')) {
+                $comments->whereHas('reports', function ($query) {
+                    $query->doesntHave('reviews');
+                })
+                    ->withCount('reports')
+                    ->orderByDesc('reports_count');
+            } else {
+                $comments->whereDoesntHave('reports', function ($query) {
+                    $query->doesntHave('reviews');
+                })->has('reports')
+                    ->addSelect(['latest_report_review_at' => PostCommentReport::select('post_comment_report_reviews.created_at')
+                        ->join('post_comment_report_reviews', 'post_comment_reports.id', '=', 'post_comment_report_reviews.post_comment_report_id')
+                        ->whereColumn('post_comment_reports.post_comment_id', 'post_comments.id')
+                        ->orderByDesc('post_comment_report_reviews.created_at')
+                        ->limit(1),
+                    ])
+                    ->orderByDesc('latest_report_review_at');
+            }
+        }
+
+        if (! $request->boolean('reported') && ! $request->boolean('pending_review') && ! $request->boolean('pending_reports')) {
+            $comments->orderByDesc('id');
+        }
+
+        return PostCommentResource::collection($comments->paginate(8))
             ->response();
     }
 

@@ -54,5 +54,30 @@ class PostCommentSeeder extends Seeder
                     ->create();
             }
         }
+
+        PostComment::factory()
+            ->count(8)
+            ->withReports()
+            ->create();
+
+        PostComment::factory()
+            ->count(3)
+            ->hidden(false)
+            ->create();
+
+        PostComment::factory()
+            ->count(3)
+            ->hidden(true)
+            ->create();
+
+        PostComment::factory()
+            ->count(2)
+            ->unhidden(false)
+            ->create();
+
+        PostComment::factory()
+            ->count(2)
+            ->unhidden(true)
+            ->create();
     }
 }

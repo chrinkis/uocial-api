@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\ModerationAction;
+use App\Models\Scopes\NonHiddenPostCommentScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ScopedBy([NonHiddenPostCommentScope::class])]
 class PostComment extends Model
 {
     /** @use HasFactory<\Database\Factories\PostCommentReactionFactory> */
@@ -81,5 +85,63 @@ class PostComment extends Model
     public function reports(): HasMany
     {
         return $this->hasMany(PostCommentReport::class);
+    }
+
+    /**
+     * Get the moderations for the post comment.
+     *
+     * @return HasMany<PostModeration,$this>
+     */
+    public function moderations(): HasMany
+    {
+        return $this->hasMany(PostCommentModeration::class);
+    }
+
+    public function isHidden(): bool
+    {
+        $latestModeration = $this->moderations()
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (! $latestModeration) {
+            return false;
+        }
+
+        return $latestModeration->action === ModerationAction::Hide;
+    }
+
+    public function autoHide(): void
+    {
+        $this->moderations()
+            ->create([
+                'comment' => 'Pending review by a moderator',
+                'action' => ModerationAction::Hide,
+            ]);
+    }
+
+    public function isAutoHidden(): bool
+    {
+        $latestModeration = $this->moderations()
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (! $latestModeration) {
+            return false;
+        }
+
+        return $latestModeration->action === ModerationAction::Hide && $latestModeration->user_id === null;
+    }
+
+    public function getParentIdChain(): array
+    {
+        $chain = [$this->id];
+        $current = $this;
+
+        while ($current->reply_to !== null) {
+            $current = $current->replyTo;
+            array_unshift($chain, $current->id);
+        }
+
+        return $chain;
     }
 }

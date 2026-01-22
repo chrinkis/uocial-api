@@ -46,6 +46,14 @@ class PostCommentResource extends JsonResource
             'reported_by_the_user' => $this->reports()
                 ->where('user_id', Auth::user()->id)
                 ->exists(),
+            'moderation' => $this->when(Auth::user()->isModerator(), [
+                'is_hidden' => $this->isHidden(),
+                'is_auto_hidden' => $this->isAutoHidden(),
+                'reports' => [
+                    'total' => $this->reports->count(),
+                ],
+            ]),
+            'chain' => $this->getParentIdChain(),
         ];
     }
 }

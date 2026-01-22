@@ -65,6 +65,8 @@ Route::prefix('app')
             ->only(['store'])
             ->middleware(UserIsModerator::class);
 
+        Route::post('posts/comments', [PostContoller::class, 'comments']);
+
         Route::apiResource('posts.comments', PostCommentController::class)
             ->only(['index', 'store']);
 

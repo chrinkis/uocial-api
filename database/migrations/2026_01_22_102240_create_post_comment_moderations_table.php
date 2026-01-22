@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ModerationAction;
 use App\Models\PostComment;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -13,14 +14,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('post_comment_reports', function (Blueprint $table) {
+        Schema::create('post_comment_moderations', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(PostComment::class)->constrained();
-            $table->foreignIdFor(User::class)->constrained();
-            $table->text('comment');
+            $table->foreignIdFor(User::class)->nullable()->constrained();
+            $table->string('comment');
+            $table->enum('action', ModerationAction::cases());
             $table->timestamps();
-
-            $table->unique(['post_comment_id', 'user_id']);
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('post_comment_reports');
+        Schema::dropIfExists('post_comment_moderations');
     }
 };

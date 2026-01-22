@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\ModerationAction;
+use App\Enums\ReportReviewStatus;
+use App\Events\PostCommentReported;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\User;
@@ -61,5 +64,97 @@ class PostCommentFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'reply_to' => $postComment->id,
         ]);
+    }
+
+    /**
+     * Indicate that the post comment has been reported.
+     */
+    public function withReports(): static
+    {
+        return $this->afterCreating(function ($postComment) {
+            $numberOfReports = rand(1, 5);
+
+            $users = User::verified()
+                ->inRandomOrder()
+                ->limit($numberOfReports)
+                ->get();
+
+            foreach ($users as $user) {
+                $report = $user->postCommentReports()->create([
+                    'post_comment_id' => $postComment->id,
+                    'comment' => fake()->sentence(rand(5, 15)),
+                ]);
+
+                PostCommentReported::dispatch($postComment);
+
+                $isReviewed = fake()->boolean();
+                if (! $isReviewed) {
+                    continue;
+                }
+
+                User::moderators()
+                    ->inRandomOrder()
+                    ->first()
+                    ->postCommentReportReviews()
+                    ->create([
+                        'post_comment_report_id' => $report->id,
+                        'comment' => fake()->sentence(rand(5, 15)),
+                        'status' => fake()->boolean() ? ReportReviewStatus::Valid : ReportReviewStatus::Invalid,
+                    ]);
+            }
+        });
+    }
+
+    /**
+     * Indicate that the post comment has been hiden by a moderator.
+     */
+    public function hidden(bool $system): static
+    {
+        if ($system) {
+            return $this->afterCreating(function ($postComment) {
+                $postComment->moderations()->create([
+                    'action' => ModerationAction::Hide,
+                    'comment' => fake()->sentence(rand(5, 10)),
+                ]);
+
+            });
+        } else {
+            return $this->afterCreating(function ($postComment) {
+                User::moderators()->inRandomOrder()
+                    ->first()
+                    ->postCommentModerations()
+                    ->create([
+                        'action' => ModerationAction::Hide,
+                        'comment' => fake()->sentence(rand(5, 10)),
+                        'post_comment_id' => $postComment->id,
+                    ]);
+            });
+        }
+    }
+
+    /**
+     * Indicate that the post comment has been unhiden by a moderator.
+     */
+    public function unhidden(bool $system): static
+    {
+        if ($system) {
+            return $this->afterCreating(function ($postComment) {
+                $postComment->moderations()->create([
+                    'action' => ModerationAction::Unhide,
+                    'comment' => fake()->sentence(rand(5, 10)),
+                ]);
+            });
+        } else {
+            return $this->afterCreating(function ($postComment) {
+                User::moderators()->inRandomOrder()
+                    ->first()
+                    ->postCommentModerations()
+                    ->create([
+                        'action' => ModerationAction::Unhide,
+                        'comment' => fake()->sentence(rand(5, 10)),
+                        'post_comment_id' => $postComment->id,
+                    ]);
+            });
+        }
     }
 }

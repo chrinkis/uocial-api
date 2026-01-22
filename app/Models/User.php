@@ -190,4 +190,24 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PostModeration::class);
     }
+
+    /**
+     * Get the reviews of post comment reports user has created.
+     *
+     * @return HasMany<PostCommentReportReview,User>
+     */
+    public function postCommentReportReviews(): HasMany
+    {
+        return $this->hasMany(PostCommentReportReview::class);
+    }
+
+    /**
+     * Get the moderations of post comments user has created.
+     *
+     * @return HasMany<PostCommentModeration,User>
+     */
+    public function postCommentModerations(): HasMany
+    {
+        return $this->hasMany(PostCommentModeration::class);
+    }
 }
