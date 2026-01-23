@@ -55,29 +55,51 @@ class PostCommentSeeder extends Seeder
             }
         }
 
-        PostComment::factory()
-            ->count(8)
-            ->withReports()
-            ->create();
+        for ($i = 0; $i < 5; $i++) {
+            PostComment::factory()
+                ->withReports()
+                ->create();
 
-        PostComment::factory()
-            ->count(3)
-            ->hidden(false)
-            ->create();
+            PostComment::factory()
+                ->hidden(false)
+                ->create();
 
-        PostComment::factory()
-            ->count(3)
-            ->hidden(true)
-            ->create();
+            PostComment::factory()
+                ->hidden(true)
+                ->create();
 
-        PostComment::factory()
-            ->count(2)
-            ->unhidden(false)
-            ->create();
+            PostComment::factory()
+                ->unhidden(false)
+                ->create();
 
-        PostComment::factory()
-            ->count(2)
-            ->unhidden(true)
-            ->create();
+            PostComment::factory()
+                ->unhidden(true)
+                ->create();
+
+            PostComment::factory()
+                ->replyTo()
+                ->withReports()
+                ->create();
+
+            PostComment::factory()
+                ->replyTo()
+                ->hidden(false)
+                ->create();
+
+            PostComment::factory()
+                ->replyTo()
+                ->hidden(true)
+                ->create();
+
+            PostComment::factory()
+                ->replyTo()
+                ->unhidden(false)
+                ->create();
+
+            PostComment::factory()
+                ->replyTo()
+                ->unhidden(true)
+                ->create();
+        }
     }
 }

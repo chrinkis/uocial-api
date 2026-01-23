@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Scopes\NonHiddenPostCommentScope;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +43,9 @@ class PostCommentResource extends JsonResource
             ],
             'replies' => [
                 'count' => $this->replies->count(),
+                'total' => $this->when(Auth::user()->isModerator(), $this->replies()
+                    ->withoutGlobalScope(NonHiddenPostCommentScope::class)
+                    ->count()),
             ],
             'reported_by_the_user' => $this->reports()
                 ->where('user_id', Auth::user()->id)

@@ -59,10 +59,13 @@ class PostCommentFactory extends Factory
     /**
      * Specifies the comment that replies to.
      */
-    public function replyTo(PostComment $postComment): static
+    public function replyTo(?PostComment $postComment = null): static
     {
+        $postComment = $postComment ?? PostComment::inRandomOrder()->first();
+
         return $this->state(fn (array $attributes) => [
             'reply_to' => $postComment->id,
+            'post_id' => $postComment->post->id,
         ]);
     }
 

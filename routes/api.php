@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostCommentController;
+use App\Http\Controllers\PostCommentModerationController;
+use App\Http\Controllers\PostCommentReportController;
+use App\Http\Controllers\PostCommentReportReviewController;
 use App\Http\Controllers\PostContoller;
 use App\Http\Controllers\PostModerationController;
 use App\Http\Controllers\PostReportController;
@@ -74,5 +77,16 @@ Route::prefix('app')
 
         Route::post('posts/{post}/comments/{postComment}/react', [PostCommentController::class, 'react']);
 
-        Route::post('posts/{post}/comments/{postComment}/report', [PostCommentController::class, 'report']);
+        Route::get('posts/{post}/comments/{postComment}/reports', [PostCommentReportController::class, 'index'])
+            ->middleware(UserIsModerator::class);
+
+        Route::post('posts/{post}/comments/{postComment}/reports', [PostCommentReportController::class, 'store']);
+
+        Route::apiResource('posts.comments.reports.reviews', PostCommentReportReviewController::class)
+            ->only(['store'])
+            ->middleware(UserIsModerator::class);
+
+        Route::apiResource('posts.comments.moderations', PostCommentModerationController::class)
+            ->only(['store'])
+            ->middleware(UserIsModerator::class);
     });

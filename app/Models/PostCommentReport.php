@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PostCommentReport extends Model
@@ -25,5 +26,16 @@ class PostCommentReport extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(PostCommentReportReview::class);
+    }
+
+    /**
+     * Get the post-comment that reffers to.
+     *
+     * @return BelongsTo<PostComment,$this>
+     */
+    public function postComment(): BelongsTo
+    {
+        return $this->belongsTo(PostComment::class)
+            ->withoutGlobalScopes();
     }
 }
