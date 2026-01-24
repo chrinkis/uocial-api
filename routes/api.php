@@ -46,6 +46,8 @@ Route::prefix('app')
     ->group(function () {
         Route::get('posts/saved', [PostContoller::class, 'saved']);
 
+        Route::get('posts/comments', [PostContoller::class, 'comments']);
+
         Route::apiResource('posts', PostContoller::class)
             ->only(['index', 'show', 'store']);
 
@@ -67,8 +69,6 @@ Route::prefix('app')
         Route::apiResource('posts.moderations', PostModerationController::class)
             ->only(['store'])
             ->middleware(UserIsModerator::class);
-
-        Route::post('posts/comments', [PostContoller::class, 'comments']);
 
         Route::apiResource('posts.comments', PostCommentController::class)
             ->only(['index', 'store']);
