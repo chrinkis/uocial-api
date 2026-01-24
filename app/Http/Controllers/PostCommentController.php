@@ -161,4 +161,23 @@ class PostCommentController extends Controller
             ],
         ]);
     }
+
+    public function trace(string $post, string $postComment): JsonResponse
+    {
+        Post::withoutGlobalScope(NonHiddenPostScope::class)->findOrFail($post);
+        $postCommentModel = PostComment::withoutGlobalScope(NonHiddenPostCommentScope::class)->findOrFail($postComment);
+
+        $chain = $postCommentModel->getParentIdChain();
+        $comments = PostComment::withoutGlobalScope(NonHiddenPostCommentScope::class)->whereIn('id', $chain)->get()->keyBy('id');
+
+        $trace = [];
+        foreach ($chain as $id) {
+            $trace[] = new PostCommentResource($comments->get($id));
+        }
+
+        return response()->json([
+            'message' => 'Success',
+            'trace' => $trace,
+        ]);
+    }
 }

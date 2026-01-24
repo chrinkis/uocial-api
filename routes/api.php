@@ -82,6 +82,9 @@ Route::prefix('app')
 
         Route::post('posts/{post}/comments/{postComment}/reports', [PostCommentReportController::class, 'store']);
 
+        Route::get('posts/{post}/comments/{postComment}/trace', [PostCommentController::class, 'trace'])
+            ->middleware(UserIsModerator::class);
+
         Route::apiResource('posts.comments.reports.reviews', PostCommentReportReviewController::class)
             ->only(['store'])
             ->middleware(UserIsModerator::class);
