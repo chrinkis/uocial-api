@@ -119,7 +119,7 @@ class PostComment extends Model
             ]);
     }
 
-    public function isAutoHidden(): bool
+    public function isCurrentlyModeratedBySystem(): bool
     {
         $latestModeration = $this->moderations()
             ->orderByDesc('created_at')
@@ -129,7 +129,7 @@ class PostComment extends Model
             return false;
         }
 
-        return $latestModeration->action === ModerationAction::Hide && $latestModeration->user_id === null;
+        return $latestModeration->user_id === null;
     }
 
     public function getParentIdChain(): array

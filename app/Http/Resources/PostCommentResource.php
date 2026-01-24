@@ -52,7 +52,7 @@ class PostCommentResource extends JsonResource
                 ->exists(),
             'moderation' => $this->when(Auth::user()->isModerator(), [
                 'is_hidden' => $this->isHidden(),
-                'is_auto_hidden' => $this->isAutoHidden(),
+                'by_system' => $this->isCurrentlyModeratedBySystem(),
                 'reports' => [
                     'total' => $this->reports->count(),
                 ],
