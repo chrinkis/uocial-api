@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PostLocation;
 use App\Enums\PostReaction;
+use App\Events\PostCreated;
 use App\Http\Resources\PostCommentResource;
 use App\Http\Resources\PostReactionResource;
 use App\Http\Resources\PostResource;
@@ -239,6 +240,8 @@ class PostController extends Controller
 
         $post = Auth::user()->posts()
             ->create($validated);
+
+        PostCreated::dispatch($post);
 
         if (Arr::has($validated, 'hashtags')) {
             $hashtags = array_map(fn ($h) => Hashtag::firstOrCreate([

@@ -210,4 +210,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PostCommentModeration::class);
     }
+
+    /**
+     * Get the post-subscriptions related to the user.
+     *
+     * @return HasMany<PostSubscription,User>
+     */
+    public function postSubscriptions(): HasMany
+    {
+        return $this->hasMany(PostSubscription::class);
+    }
 }

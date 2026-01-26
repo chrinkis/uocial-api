@@ -133,4 +133,14 @@ class Post extends Model
 
         return $latestModeration->user_id === null;
     }
+
+    /**
+     * Get the subscriptions of the post.
+     *
+     * @return HasMany<PostSubscription,$this>
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(PostSubscription::class);
+    }
 }
