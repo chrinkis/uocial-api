@@ -5,7 +5,7 @@ use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostCommentModerationController;
 use App\Http\Controllers\PostCommentReportController;
 use App\Http\Controllers\PostCommentReportReviewController;
-use App\Http\Controllers\PostContoller;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostModerationController;
 use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
@@ -44,18 +44,18 @@ Route::prefix('auth')
 Route::prefix('app')
     ->middleware(['auth:sanctum', 'verified'])
     ->group(function () {
-        Route::get('posts/saved', [PostContoller::class, 'saved']);
+        Route::get('posts/saved', [PostController::class, 'saved']);
 
-        Route::get('posts/comments', [PostContoller::class, 'comments']);
+        Route::get('posts/comments', [PostController::class, 'comments']);
 
-        Route::apiResource('posts', PostContoller::class)
+        Route::apiResource('posts', PostController::class)
             ->only(['index', 'show', 'store']);
 
-        Route::post('posts/{post}/react', [PostContoller::class, 'react']);
+        Route::post('posts/{post}/react', [PostController::class, 'react']);
 
-        Route::post('posts/{post}/save', [PostContoller::class, 'save']);
+        Route::post('posts/{post}/save', [PostController::class, 'save']);
 
-        Route::post('posts/{post}/unsave', [PostContoller::class, 'unsave']);
+        Route::post('posts/{post}/unsave', [PostController::class, 'unsave']);
 
         Route::get('posts/{post}/reports', [PostReportController::class, 'index'])
             ->middleware(UserIsModerator::class);

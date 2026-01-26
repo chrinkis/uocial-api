@@ -21,7 +21,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
-class PostContoller extends Controller
+class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -109,13 +109,13 @@ class PostContoller extends Controller
                 $posts->whereDoesntHave('reports', function ($query) {
                     $query->doesntHave('reviews');
                 })->has('reports')
-                ->addSelect(['latest_report_review_at' => \App\Models\PostReport::select('post_report_reviews.created_at')
-                    ->join('post_report_reviews', 'post_reports.id', '=', 'post_report_reviews.post_report_id')
-                    ->whereColumn('post_reports.post_id', 'posts.id')
-                    ->orderByDesc('post_report_reviews.created_at')
-                    ->limit(1),
-                ])
-                ->orderByDesc('latest_report_review_at');
+                    ->addSelect(['latest_report_review_at' => \App\Models\PostReport::select('post_report_reviews.created_at')
+                        ->join('post_report_reviews', 'post_reports.id', '=', 'post_report_reviews.post_report_id')
+                        ->whereColumn('post_reports.post_id', 'posts.id')
+                        ->orderByDesc('post_report_reviews.created_at')
+                        ->limit(1),
+                    ])
+                    ->orderByDesc('latest_report_review_at');
             }
         }
 
