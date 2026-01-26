@@ -36,15 +36,11 @@ class PostController extends Controller
     {
         $posts = Post::query();
 
-        if ($request->has('reported')) {
-            if (! Auth::user()->isModerator()) {
-                return response()->json([
-                    'message' => 'Only moderators have access to reports',
-                ], 403);
-            }
-
+        if (Auth::user()->isModerator()) {
             $posts->withoutGlobalScope(NonHiddenPostScope::class);
+        }
 
+        if ($request->has('reported')) {
             if ($request->boolean('reported')) {
                 $posts->has('reports')
                     ->withCount('reports')
@@ -55,14 +51,6 @@ class PostController extends Controller
         }
 
         if ($request->has('pending_review')) {
-            if (! Auth::user()->isModerator()) {
-                return response()->json([
-                    'message' => 'Only moderators have access to moderation reviews',
-                ], 403);
-            }
-
-            $posts->withoutGlobalScope(NonHiddenPostScope::class);
-
             if ($request->boolean('pending_review')) {
                 $posts->whereHas('moderations', function ($query) {
                     $query->whereNull('user_id')
@@ -91,14 +79,6 @@ class PostController extends Controller
         }
 
         if ($request->has('pending_reports')) {
-            if (! Auth::user()->isModerator()) {
-                return response()->json([
-                    'message' => 'Only moderators have access to report reviews',
-                ], 403);
-            }
-
-            $posts->withoutGlobalScope(NonHiddenPostScope::class);
-
             if ($request->boolean('pending_reports')) {
                 $posts->whereHas('reports', function ($query) {
                     $query->doesntHave('reviews');
