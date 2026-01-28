@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Events\PostCommentCreated;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\User;
@@ -22,10 +23,11 @@ class PostCommentSeeder extends Seeder
                 ->get();
 
             foreach ($posts as $post) {
-                PostComment::factory()
+                $postComment = PostComment::factory()
                     ->user($user)
                     ->post($post)
                     ->create();
+                PostCommentCreated::dispatch($postComment);
             }
         }
 
@@ -35,10 +37,11 @@ class PostCommentSeeder extends Seeder
             ->get();
 
         foreach ($commentsToReply as $commentToReply) {
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->post($commentToReply->post)
                 ->replyTo($commentToReply)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
         }
 
         for ($i = 0; $i < 5; $i++) {
@@ -48,58 +51,69 @@ class PostCommentSeeder extends Seeder
                 ->get();
 
             foreach ($commentsToReply as $commentToReply) {
-                PostComment::factory()
+                $postComment = PostComment::factory()
                     ->post($commentToReply->post)
                     ->replyTo($commentToReply)
                     ->create();
+                PostCommentCreated::dispatch($postComment);
             }
         }
 
         for ($i = 0; $i < 5; $i++) {
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->withReports()
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->hidden(false)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->hidden(true)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->unhidden(false)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->unhidden(true)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->replyTo()
                 ->withReports()
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->replyTo()
                 ->hidden(false)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->replyTo()
                 ->hidden(true)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->replyTo()
                 ->unhidden(false)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
 
-            PostComment::factory()
+            $postComment = PostComment::factory()
                 ->replyTo()
                 ->unhidden(true)
                 ->create();
+            PostCommentCreated::dispatch($postComment);
         }
     }
 }

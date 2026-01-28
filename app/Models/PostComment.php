@@ -144,4 +144,9 @@ class PostComment extends Model
 
         return $chain;
     }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(PostCommentSubscription::class);
+    }
 }

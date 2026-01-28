@@ -64,6 +64,8 @@ class PostCommentController extends Controller
         $postComment = Auth::user()->postComments()
             ->create([...$validated, 'post_id' => $post->id]);
 
+        PostCommentCreated::dispatch($postComment);
+
         return response()->json([
             'message' => 'Comment created successfully',
             'comment' => new PostCommentResource($postComment),
