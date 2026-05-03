@@ -210,4 +210,20 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PostCommentModeration::class);
     }
+
+    /**
+     * @return BelongsToMany<PrivacyPolicy,$this>
+     */
+    public function acceptedPrivacyPolicies(): BelongsToMany
+    {
+        return $this->belongsToMany(PrivacyPolicy::class, 'privacy_policy_acceptances');
+    }
+
+    /**
+     * @return BelongsToMany<TermsOfUse,$this>
+     */
+    public function acceptedTermsOfUses(): BelongsToMany
+    {
+        return $this->belongsToMany(TermsOfUse::class, 'terms_of_use_acceptances');
+    }
 }

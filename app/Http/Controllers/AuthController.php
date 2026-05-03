@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrivacyPolicy;
+use App\Models\TermsOfUse;
 use App\Models\User;
 use App\Rules\Password as PasswordRule;
 use Illuminate\Auth\Events\PasswordReset;
@@ -112,14 +114,22 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'ends_with:uoc.gr', 'unique:App\Models\User'],
             'password' => ['required', 'string', 'min:12', 'confirmed', new PasswordRule],
             'stateless' => ['sometimes', 'nullable', 'string'],
+            'accepted_privacy_policy' => ['required', 'accepted'],
+            'accepted_terms_of_use' => ['required', 'accepted'],
         ]);
         assert(is_array($validated));
+
+        $latestPrivacyPolicy = PrivacyPolicy::latest('id')->firstOrFail();
+        $latestTermsOfUse = TermsOfUse::latest('id')->firstOrFail();
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
         ]);
+
+        $user->acceptedPrivacyPolicies()->attach($latestPrivacyPolicy->id);
+        $user->acceptedTermsOfUses()->attach($latestTermsOfUse->id);
 
         event(new Registered($user));
 

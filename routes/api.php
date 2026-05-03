@@ -9,12 +9,17 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostModerationController;
 use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
+use App\Http\Controllers\PrivacyPolicyController;
+use App\Http\Controllers\TermsOfUseController;
+use App\Http\Middleware\UserHasAcceptedLegalDocuments;
 use App\Http\Middleware\UserIsModerator;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    // return $request->user();
+    return new UserResource($request->user());
 })->middleware('auth:sanctum');
 
 Route::prefix('auth')
@@ -41,8 +46,18 @@ Route::prefix('auth')
             ->name('verification.send');
     });
 
+Route::prefix('legal')->group(function () {
+    Route::get('privacy-policy', [PrivacyPolicyController::class, 'show']);
+    Route::get('terms-of-use', [TermsOfUseController::class, 'show']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('privacy-policy/accept', [PrivacyPolicyController::class, 'accept']);
+        Route::post('terms-of-use/accept', [TermsOfUseController::class, 'accept']);
+    });
+});
+
 Route::prefix('app')
-    ->middleware(['auth:sanctum', 'verified'])
+    ->middleware(['auth:sanctum', 'verified', UserHasAcceptedLegalDocuments::class])
     ->group(function () {
         Route::get('posts/saved', [PostController::class, 'saved']);
 
