@@ -33,7 +33,7 @@ class AuthController extends Controller
         ]);
         assert(is_array($credentials));
 
-        if (! Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials, true)) {
             return response()->json([
                 'message' => 'Invalid Credentials',
             ], 401);
@@ -148,7 +148,7 @@ class AuthController extends Controller
 
         // we are statefull here
 
-        Auth::login($user);
+        Auth::login($user, true);
         $request->session()->regenerate();
 
         return response()->json([
