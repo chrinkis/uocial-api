@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostCommentModerationController;
@@ -21,6 +22,8 @@ Route::get('/user', function (Request $request) {
     // return $request->user();
     return new UserResource($request->user());
 })->middleware('auth:sanctum');
+
+Route::get('altcha/challenge', [AltchaController::class, 'challenge']);
 
 Route::prefix('auth')
     ->group(function () {

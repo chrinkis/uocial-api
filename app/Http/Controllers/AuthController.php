@@ -6,6 +6,7 @@ use App\Models\PrivacyPolicy;
 use App\Models\TermsOfUse;
 use App\Models\User;
 use App\Rules\Password as PasswordRule;
+use App\Rules\VerifyAltcha;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -30,10 +31,11 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'altcha' => ['required', 'string', new VerifyAltcha],
         ]);
         assert(is_array($credentials));
 
-        if (! Auth::attempt($credentials, true)) {
+        if (! Auth::attempt(Arr::only($credentials, ['email', 'password']), true)) {
             return response()->json([
                 'message' => 'Invalid Credentials',
             ], 401);
@@ -116,6 +118,7 @@ class AuthController extends Controller
             'stateless' => ['sometimes', 'nullable', 'string'],
             'accepted_privacy_policy' => ['required', 'accepted'],
             'accepted_terms_of_use' => ['required', 'accepted'],
+            'altcha' => ['required', 'string', new VerifyAltcha],
         ]);
         assert(is_array($validated));
 
@@ -161,6 +164,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email', 'ends_with:uoc.gr'],
+            'altcha' => ['required', 'string', new VerifyAltcha],
         ]);
 
         $status = Password::sendResetLink(
