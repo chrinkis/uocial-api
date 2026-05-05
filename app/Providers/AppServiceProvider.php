@@ -43,7 +43,8 @@ class AppServiceProvider extends ServiceProvider
             return (new MailMessage)
                 ->subject('Verify Email Address')
                 ->line('Click the button below to verify your email address.')
-                ->action('Verify Email Address', $url);
+                ->action('Verify Email Address', $url)
+                ->line('If you didn\'t signed up for uocial.gr, please ignore this email!');
         });
 
         RateLimiter::for('email-verification', function (Request $request) {
