@@ -31,11 +31,12 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'remember' => ['required', 'boolean'],
             'altcha' => ['required', 'string', new VerifyAltcha],
         ]);
         assert(is_array($credentials));
 
-        if (! Auth::attempt(Arr::only($credentials, ['email', 'password']), true)) {
+        if (! Auth::attempt(Arr::only($credentials, ['email', 'password']), (bool) $credentials['remember'])) {
             return response()->json([
                 'message' => 'Invalid Credentials',
             ], 401);
@@ -155,7 +156,7 @@ class AuthController extends Controller
 
         // we are statefull here
 
-        Auth::login($user, true);
+        Auth::login($user, false);
         $request->session()->regenerate();
 
         return response()->json([
