@@ -131,8 +131,12 @@ class AuthController extends Controller
             'password' => $validated['password'],
         ]);
 
-        $user->acceptedPrivacyPolicies()->attach($latestPrivacyPolicy->id);
-        $user->acceptedTermsOfUses()->attach($latestTermsOfUse->id);
+        $user->acceptedPrivacyPolicies()->attach($latestPrivacyPolicy->id, [
+            'ip_address' => $request->ip(),
+        ]);
+        $user->acceptedTermsOfUses()->attach($latestTermsOfUse->id, [
+            'ip_address' => $request->ip(),
+        ]);
 
         event(new Registered($user));
 

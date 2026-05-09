@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\PrivacyPolicyResource;
 use App\Models\PrivacyPolicy;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PrivacyPolicyController extends Controller
@@ -16,7 +17,7 @@ class PrivacyPolicyController extends Controller
         return (new PrivacyPolicyResource($policy))->response();
     }
 
-    public function accept(): JsonResponse
+    public function accept(Request $request): JsonResponse
     {
         $policy = PrivacyPolicy::latest('id')->firstOrFail();
 
@@ -24,7 +25,9 @@ class PrivacyPolicyController extends Controller
             return response()->json(['message' => 'Already accepted'], 409);
         }
 
-        Auth::user()->acceptedPrivacyPolicies()->attach($policy->id);
+        Auth::user()->acceptedPrivacyPolicies()->attach($policy->id, [
+            'ip_address' => $request->ip(),
+        ]);
 
         return response()->json(['message' => 'Accepted successfully']);
     }

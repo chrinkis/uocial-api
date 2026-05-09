@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\TermsOfUseResource;
 use App\Models\TermsOfUse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TermsOfUseController extends Controller
@@ -16,7 +17,7 @@ class TermsOfUseController extends Controller
         return (new TermsOfUseResource($terms))->response();
     }
 
-    public function accept(): JsonResponse
+    public function accept(Request $request): JsonResponse
     {
         $terms = TermsOfUse::latest('id')->firstOrFail();
 
@@ -24,7 +25,9 @@ class TermsOfUseController extends Controller
             return response()->json(['message' => 'Already accepted'], 409);
         }
 
-        Auth::user()->acceptedTermsOfUses()->attach($terms->id);
+        Auth::user()->acceptedTermsOfUses()->attach($terms->id, [
+            'ip_address' => $request->ip(),
+        ]);
 
         return response()->json(['message' => 'Accepted successfully']);
     }
