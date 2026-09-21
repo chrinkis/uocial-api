@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\ModerationAction;
 use App\Enums\PostLocation;
 use App\Enums\ReportReviewStatus;
+use App\Events\PostModerated;
 use App\Events\PostReported;
 use App\Models\Post;
 use App\Models\User;
@@ -96,6 +97,7 @@ class PostFactory extends Factory
                     'comment' => fake()->sentence(rand(5, 10)),
                 ]);
 
+                PostModerated::dispatch($post);
             });
         } else {
             return $this->afterCreating(function ($post) {
@@ -107,6 +109,8 @@ class PostFactory extends Factory
                         'comment' => fake()->sentence(rand(5, 10)),
                         'post_id' => $post->id,
                     ]);
+
+                PostModerated::dispatch($post);
             });
         }
     }
@@ -122,6 +126,8 @@ class PostFactory extends Factory
                     'action' => ModerationAction::Unhide,
                     'comment' => fake()->sentence(rand(5, 10)),
                 ]);
+
+                PostModerated::dispatch($post);
             });
         } else {
             return $this->afterCreating(function ($post) {
@@ -133,6 +139,8 @@ class PostFactory extends Factory
                         'comment' => fake()->sentence(rand(5, 10)),
                         'post_id' => $post->id,
                     ]);
+
+                PostModerated::dispatch($post);
             });
         }
     }
