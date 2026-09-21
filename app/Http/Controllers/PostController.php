@@ -368,4 +368,26 @@ class PostController extends Controller
             'message' => 'Post removed from saved',
         ]);
     }
+
+    public function subscribe(Post $post): JsonResponse
+    {
+        Auth::user()->postSubscriptions()->firstOrCreate([
+            'post_id' => $post->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Subscribed to post successfully',
+        ]);
+    }
+
+    public function unsubscribe(Post $post): JsonResponse
+    {
+        Auth::user()->postSubscriptions()
+            ->where('post_id', $post->id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Unsubscribed from post successfully',
+        ]);
+    }
 }

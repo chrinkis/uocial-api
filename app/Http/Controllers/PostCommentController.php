@@ -164,6 +164,28 @@ class PostCommentController extends Controller
         ]);
     }
 
+    public function subscribe(Post $post, PostComment $postComment): JsonResponse
+    {
+        Auth::user()->postCommentSubscriptions()->firstOrCreate([
+            'post_comment_id' => $postComment->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Subscribed to comment successfully',
+        ]);
+    }
+
+    public function unsubscribe(Post $post, PostComment $postComment): JsonResponse
+    {
+        Auth::user()->postCommentSubscriptions()
+            ->where('post_comment_id', $postComment->id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Unsubscribed from comment successfully',
+        ]);
+    }
+
     public function trace(string $post, string $postComment): JsonResponse
     {
         Post::withoutGlobalScope(NonHiddenPostScope::class)->findOrFail($post);

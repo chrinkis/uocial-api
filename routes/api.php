@@ -75,6 +75,10 @@ Route::prefix('app')
 
         Route::post('posts/{post}/unsave', [PostController::class, 'unsave']);
 
+        Route::post('posts/{post}/subscribe', [PostController::class, 'subscribe']);
+
+        Route::post('posts/{post}/unsubscribe', [PostController::class, 'unsubscribe']);
+
         Route::get('posts/{post}/reports', [PostReportController::class, 'index'])
             ->middleware(UserIsModerator::class);
 
@@ -94,6 +98,10 @@ Route::prefix('app')
         Route::get('posts/{post}/comments/{postComment}/replies', [PostCommentController::class, 'replies']);
 
         Route::post('posts/{post}/comments/{postComment}/react', [PostCommentController::class, 'react']);
+
+        Route::post('posts/{post}/comments/{postComment}/subscribe', [PostCommentController::class, 'subscribe']);
+
+        Route::post('posts/{post}/comments/{postComment}/unsubscribe', [PostCommentController::class, 'unsubscribe']);
 
         Route::get('posts/{post}/comments/{postComment}/reports', [PostCommentReportController::class, 'index'])
             ->middleware(UserIsModerator::class);
