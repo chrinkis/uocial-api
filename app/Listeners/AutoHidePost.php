@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Events\PostModerated;
 use App\Events\PostReported;
 
 class AutoHidePost
@@ -28,5 +29,7 @@ class AutoHidePost
         }
 
         $event->post->autoHide();
+
+        PostModerated::dispatch($event->post);
     }
 }
