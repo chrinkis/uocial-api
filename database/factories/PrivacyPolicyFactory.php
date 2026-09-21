@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\PrivacyPolicy;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PrivacyPolicy>
+ * @extends Factory<PrivacyPolicy>
  */
 class PrivacyPolicyFactory extends Factory
 {

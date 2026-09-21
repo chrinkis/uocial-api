@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use AltchaOrg\Altcha\Altcha;
 use AltchaOrg\Altcha\Algorithm\Pbkdf2;
+use AltchaOrg\Altcha\Altcha;
 use AltchaOrg\Altcha\CreateChallengeOptions;
 use Illuminate\Http\JsonResponse;
 
@@ -17,7 +17,7 @@ class AltchaController extends Controller
         $altcha = new Altcha(hmacSignatureSecret: $hmacKey);
 
         $challenge = $altcha->createChallenge(new CreateChallengeOptions(
-            algorithm: new Pbkdf2(),
+            algorithm: new Pbkdf2,
             cost: 5000,
             counter: random_int(5000, 10000),
             expiresAt: time() + 600,

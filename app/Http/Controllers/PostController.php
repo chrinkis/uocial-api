@@ -14,6 +14,7 @@ use App\Models\PostComment;
 use App\Models\PostCommentModeration;
 use App\Models\PostCommentReport;
 use App\Models\PostModeration;
+use App\Models\PostReport;
 use App\Models\Scopes\NonHiddenPostCommentScope;
 use App\Models\Scopes\NonHiddenPostScope;
 use Illuminate\Http\JsonResponse;
@@ -90,7 +91,7 @@ class PostController extends Controller
                 $posts->whereDoesntHave('reports', function ($query) {
                     $query->doesntHave('reviews');
                 })->has('reports')
-                    ->addSelect(['latest_report_review_at' => \App\Models\PostReport::select('post_report_reviews.created_at')
+                    ->addSelect(['latest_report_review_at' => PostReport::select('post_report_reviews.created_at')
                         ->join('post_report_reviews', 'post_reports.id', '=', 'post_report_reviews.post_report_id')
                         ->whereColumn('post_reports.post_id', 'posts.id')
                         ->orderByDesc('post_report_reviews.created_at')

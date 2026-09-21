@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ModerationAction;
 use App\Models\Scopes\NonHiddenPostCommentScope;
+use Database\Factories\PostCommentReactionFactory;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[ScopedBy([NonHiddenPostCommentScope::class])]
 class PostComment extends Model
 {
-    /** @use HasFactory<\Database\Factories\PostCommentReactionFactory> */
+    /** @use HasFactory<PostCommentReactionFactory> */
     use HasFactory;
 
     /**
