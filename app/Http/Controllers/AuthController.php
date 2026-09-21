@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrivacyPolicy;
+use App\Models\TermsOfUse;
 use App\Models\User;
 use App\Rules\Password as PasswordRule;
+use App\Rules\VerifyAltcha;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -28,10 +31,12 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'remember' => ['required', 'boolean'],
+            'altcha' => ['required', 'string', new VerifyAltcha],
         ]);
         assert(is_array($credentials));
 
-        if (! Auth::attempt($credentials)) {
+        if (! Auth::attempt(Arr::only($credentials, ['email', 'password']), (bool) $credentials['remember'])) {
             return response()->json([
                 'message' => 'Invalid Credentials',
             ], 401);
@@ -112,13 +117,26 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'ends_with:uoc.gr', 'unique:App\Models\User'],
             'password' => ['required', 'string', 'min:12', 'confirmed', new PasswordRule],
             'stateless' => ['sometimes', 'nullable', 'string'],
+            'accepted_privacy_policy' => ['required', 'accepted'],
+            'accepted_terms_of_use' => ['required', 'accepted'],
+            'altcha' => ['required', 'string', new VerifyAltcha],
         ]);
         assert(is_array($validated));
+
+        $latestPrivacyPolicy = PrivacyPolicy::latest('id')->firstOrFail();
+        $latestTermsOfUse = TermsOfUse::latest('id')->firstOrFail();
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
+        ]);
+
+        $user->acceptedPrivacyPolicies()->attach($latestPrivacyPolicy->id, [
+            'ip_address' => $request->ip(),
+        ]);
+        $user->acceptedTermsOfUses()->attach($latestTermsOfUse->id, [
+            'ip_address' => $request->ip(),
         ]);
 
         event(new Registered($user));
@@ -138,7 +156,7 @@ class AuthController extends Controller
 
         // we are statefull here
 
-        Auth::login($user);
+        Auth::login($user, false);
         $request->session()->regenerate();
 
         return response()->json([
@@ -151,6 +169,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email', 'ends_with:uoc.gr'],
+            'altcha' => ['required', 'string', new VerifyAltcha],
         ]);
 
         $status = Password::sendResetLink(

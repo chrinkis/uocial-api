@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,14 +11,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    /** @use HasFactory<UserFactory> */
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -224,5 +226,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function postCommentSubscriptions(): HasMany
     {
         return $this->hasMany(PostCommentSubscription::class);
+    }
+
+    /**
+     * @return BelongsToMany<PrivacyPolicy,$this>
+     */
+    public function acceptedPrivacyPolicies(): BelongsToMany
+    {
+        return $this->belongsToMany(PrivacyPolicy::class, 'privacy_policy_acceptances');
+    }
+
+    /**
+     * @return BelongsToMany<TermsOfUse,$this>
+     */
+    public function acceptedTermsOfUses(): BelongsToMany
+    {
+        return $this->belongsToMany(TermsOfUse::class, 'terms_of_use_acceptances');
     }
 }

@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'altcha' => [
+        'hmac_key' => env('ALTCHA_HMAC_KEY'),
+    ],
+
 ];

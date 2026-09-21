@@ -1,0 +1,16 @@
+meta {
+  name: terms of use
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api}}/legal/terms-of-use
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

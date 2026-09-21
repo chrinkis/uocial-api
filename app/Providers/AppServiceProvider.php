@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Observers\UserObserver;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -25,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        User::observe(UserObserver::class);
+
         ResetPassword::createUrlUsing(function (mixed $user, string $token) {
             $spaUrl = config('app.spa_url');
 
@@ -43,7 +47,8 @@ class AppServiceProvider extends ServiceProvider
             return (new MailMessage)
                 ->subject('Verify Email Address')
                 ->line('Click the button below to verify your email address.')
-                ->action('Verify Email Address', $url);
+                ->action('Verify Email Address', $url)
+                ->line('If you didn\'t signed up for uocial.gr, please ignore this email!');
         });
 
         RateLimiter::for('email-verification', function (Request $request) {

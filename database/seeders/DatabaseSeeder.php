@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
             PostReactionSeeder::class,
             PostCommentSeeder::class,
             PostCommentReactionSeeder::class,
+            PrivacyPolicySeeder::class,
+            TermsOfUseSeeder::class,
+            PrivacyPolicyAcceptanceSeeder::class,
+            TermsOfUseAcceptanceSeeder::class,
         ]);
     }
 }
