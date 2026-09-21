@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostCommentModerationController;
 use App\Http\Controllers\PostCommentReportController;
@@ -63,6 +64,14 @@ Route::prefix('app')
     ->middleware(['auth:sanctum', 'verified', UserHasAcceptedLegalDocuments::class])
     ->group(function () {
         Route::get('posts/saved', [PostController::class, 'saved']);
+
+        Route::get('notifications', [NotificationController::class, 'index']);
+
+        Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+
+        Route::post('notifications/read-all', [NotificationController::class, 'readAll']);
+
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'read']);
 
         Route::get('posts/comments', [PostController::class, 'comments']);
 
