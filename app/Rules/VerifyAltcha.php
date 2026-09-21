@@ -2,8 +2,8 @@
 
 namespace App\Rules;
 
-use AltchaOrg\Altcha\Altcha;
 use AltchaOrg\Altcha\Algorithm\Pbkdf2;
+use AltchaOrg\Altcha\Altcha;
 use AltchaOrg\Altcha\Challenge;
 use AltchaOrg\Altcha\ChallengeParameters;
 use AltchaOrg\Altcha\Payload;
@@ -30,7 +30,7 @@ class VerifyAltcha implements ValidationRule
         $altcha = new Altcha(hmacSignatureSecret: $hmacKey);
         $result = $altcha->verifySolution(new VerifySolutionOptions(
             payload: $payload,
-            algorithm: new Pbkdf2(),
+            algorithm: new Pbkdf2,
         ));
 
         if (! $result->verified) {

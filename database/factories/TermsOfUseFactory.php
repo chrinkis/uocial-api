@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\TermsOfUse;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TermsOfUse>
+ * @extends Factory<TermsOfUse>
  */
 class TermsOfUseFactory extends Factory
 {

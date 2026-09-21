@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Events\PostCommentModerated;
 use App\Events\PostCommentReported;
 
 class AutoHideComment
@@ -28,5 +29,7 @@ class AutoHideComment
         }
 
         $event->postComment->autoHide();
+
+        PostCommentModerated::dispatch($event->postComment);
     }
 }

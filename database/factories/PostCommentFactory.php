@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\ModerationAction;
 use App\Enums\ReportReviewStatus;
+use App\Events\PostCommentModerated;
 use App\Events\PostCommentReported;
 use App\Models\Post;
 use App\Models\PostComment;
@@ -11,7 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PostComment>
+ * @extends Factory<PostComment>
  */
 class PostCommentFactory extends Factory
 {
@@ -120,6 +121,7 @@ class PostCommentFactory extends Factory
                     'comment' => fake()->sentence(rand(5, 10)),
                 ]);
 
+                PostCommentModerated::dispatch($postComment);
             });
         } else {
             return $this->afterCreating(function ($postComment) {
@@ -131,6 +133,8 @@ class PostCommentFactory extends Factory
                         'comment' => fake()->sentence(rand(5, 10)),
                         'post_comment_id' => $postComment->id,
                     ]);
+
+                PostCommentModerated::dispatch($postComment);
             });
         }
     }
@@ -146,6 +150,8 @@ class PostCommentFactory extends Factory
                     'action' => ModerationAction::Unhide,
                     'comment' => fake()->sentence(rand(5, 10)),
                 ]);
+
+                PostCommentModerated::dispatch($postComment);
             });
         } else {
             return $this->afterCreating(function ($postComment) {
@@ -157,6 +163,8 @@ class PostCommentFactory extends Factory
                         'comment' => fake()->sentence(rand(5, 10)),
                         'post_comment_id' => $postComment->id,
                     ]);
+
+                PostCommentModerated::dispatch($postComment);
             });
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ModerationAction;
+use App\Events\PostCommentModerated;
 use App\Models\PostComment;
 use App\Models\PostCommentModeration;
 use App\Models\Scopes\NonHiddenPostCommentScope;
@@ -40,6 +41,8 @@ class PostCommentModerationController extends Controller
                 ...$validated,
                 'post_comment_id' => $postComment->id,
             ]);
+
+        PostCommentModerated::dispatch($postComment);
 
         return response()->json([
             'message' => 'Action was applied',

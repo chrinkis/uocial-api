@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PostLocation;
 use App\Enums\PostReaction;
+use App\Events\PostCreated;
 use App\Http\Resources\PostCommentResource;
 use App\Http\Resources\PostReactionResource;
 use App\Http\Resources\PostResource;
@@ -13,6 +14,7 @@ use App\Models\PostComment;
 use App\Models\PostCommentModeration;
 use App\Models\PostCommentReport;
 use App\Models\PostModeration;
+use App\Models\PostReport;
 use App\Models\Scopes\NonHiddenPostCommentScope;
 use App\Models\Scopes\NonHiddenPostScope;
 use Illuminate\Http\JsonResponse;
@@ -89,7 +91,7 @@ class PostController extends Controller
                 $posts->whereDoesntHave('reports', function ($query) {
                     $query->doesntHave('reviews');
                 })->has('reports')
-                    ->addSelect(['latest_report_review_at' => \App\Models\PostReport::select('post_report_reviews.created_at')
+                    ->addSelect(['latest_report_review_at' => PostReport::select('post_report_reviews.created_at')
                         ->join('post_report_reviews', 'post_reports.id', '=', 'post_report_reviews.post_report_id')
                         ->whereColumn('post_reports.post_id', 'posts.id')
                         ->orderByDesc('post_report_reviews.created_at')
@@ -240,6 +242,8 @@ class PostController extends Controller
         $post = Auth::user()->posts()
             ->create($validated);
 
+        PostCreated::dispatch($post);
+
         if (Arr::has($validated, 'hashtags')) {
             $hashtags = array_map(fn ($h) => Hashtag::firstOrCreate([
                 'name' => $h,
@@ -362,6 +366,28 @@ class PostController extends Controller
 
         return response()->json([
             'message' => 'Post removed from saved',
+        ]);
+    }
+
+    public function subscribe(Post $post): JsonResponse
+    {
+        Auth::user()->postSubscriptions()->firstOrCreate([
+            'post_id' => $post->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Subscribed to post successfully',
+        ]);
+    }
+
+    public function unsubscribe(Post $post): JsonResponse
+    {
+        Auth::user()->postSubscriptions()
+            ->where('post_id', $post->id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Unsubscribed from post successfully',
         ]);
     }
 }

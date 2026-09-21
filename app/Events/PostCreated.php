@@ -2,21 +2,21 @@
 
 namespace App\Events;
 
-use App\Models\PostComment;
+use App\Models\Post;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class PostCommentReported
+class PostCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(public PostComment $postComment)
+    public function __construct(public Post $post)
     {
         //
     }

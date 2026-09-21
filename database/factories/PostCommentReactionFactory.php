@@ -4,11 +4,12 @@ namespace Database\Factories;
 
 use App\Enums\PostReaction;
 use App\Models\PostComment;
+use App\Models\PostCommentReaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PostCommentReaction>
+ * @extends Factory<PostCommentReaction>
  */
 class PostCommentReactionFactory extends Factory
 {

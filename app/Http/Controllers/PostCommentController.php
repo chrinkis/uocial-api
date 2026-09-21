@@ -64,6 +64,8 @@ class PostCommentController extends Controller
         $postComment = Auth::user()->postComments()
             ->create([...$validated, 'post_id' => $post->id]);
 
+        PostCommentCreated::dispatch($postComment);
+
         return response()->json([
             'message' => 'Comment created successfully',
             'comment' => new PostCommentResource($postComment),
@@ -159,6 +161,28 @@ class PostCommentController extends Controller
 
                 ],
             ],
+        ]);
+    }
+
+    public function subscribe(Post $post, PostComment $postComment): JsonResponse
+    {
+        Auth::user()->postCommentSubscriptions()->firstOrCreate([
+            'post_comment_id' => $postComment->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Subscribed to comment successfully',
+        ]);
+    }
+
+    public function unsubscribe(Post $post, PostComment $postComment): JsonResponse
+    {
+        Auth::user()->postCommentSubscriptions()
+            ->where('post_comment_id', $postComment->id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Unsubscribed from comment successfully',
         ]);
     }
 

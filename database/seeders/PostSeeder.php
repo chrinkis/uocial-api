@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Events\PostCreated;
 use App\Models\Hashtag;
 use App\Models\Post;
 use App\Models\User;
@@ -14,34 +15,52 @@ class PostSeeder extends Seeder
      */
     public function run(): void
     {
-        Post::factory()
+        $posts = Post::factory()
             ->count(32)
             ->create();
+        foreach ($posts as $post) {
+            PostCreated::dispatch($post);
+        }
 
-        Post::factory()
+        $posts = Post::factory()
             ->count(8)
             ->withReports()
             ->create();
+        foreach ($posts as $post) {
+            PostCreated::dispatch($post);
+        }
 
-        Post::factory()
+        $posts = Post::factory()
             ->count(3)
             ->hidden(false)
             ->create();
+        foreach ($posts as $post) {
+            PostCreated::dispatch($post);
+        }
 
-        Post::factory()
+        $posts = Post::factory()
             ->count(3)
             ->hidden(true)
             ->create();
+        foreach ($posts as $post) {
+            PostCreated::dispatch($post);
+        }
 
-        Post::factory()
+        $posts = Post::factory()
             ->count(2)
             ->unhidden(false)
             ->create();
+        foreach ($posts as $post) {
+            PostCreated::dispatch($post);
+        }
 
-        Post::factory()
+        $posts = Post::factory()
             ->count(2)
             ->unhidden(true)
             ->create();
+        foreach ($posts as $post) {
+            PostCreated::dispatch($post);
+        }
 
         foreach (Post::all() as $post) {
             $hashtags = Hashtag::inRandomOrder()

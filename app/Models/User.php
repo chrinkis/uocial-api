@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
@@ -210,6 +211,26 @@ class User extends Authenticatable implements MustVerifyEmail
     public function postCommentModerations(): HasMany
     {
         return $this->hasMany(PostCommentModeration::class);
+    }
+
+    /**
+     * Get the post-subscriptions related to the user.
+     *
+     * @return HasMany<PostSubscription,User>
+     */
+    public function postSubscriptions(): HasMany
+    {
+        return $this->hasMany(PostSubscription::class);
+    }
+
+    public function postCommentSubscriptions(): HasMany
+    {
+        return $this->hasMany(PostCommentSubscription::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->latest();
     }
 
     /**
