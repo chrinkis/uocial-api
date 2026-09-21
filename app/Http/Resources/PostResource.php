@@ -79,6 +79,9 @@ class PostResource extends JsonResource
             'saved' => $this->savedByUsers()
                 ->where('user_id', Auth::user()->id)
                 ->exists(),
+            'is_subscribed' => $this->subscriptions()
+                ->whereBelongsTo(Auth::user())
+                ->exists(),
             'author' => [
                 'is_current_user' => Auth::user()->id === $this->user->id,
             ],

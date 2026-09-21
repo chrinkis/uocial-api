@@ -50,6 +50,9 @@ class PostCommentResource extends JsonResource
             'reported_by_the_user' => $this->reports()
                 ->where('user_id', Auth::user()->id)
                 ->exists(),
+            'is_subscribed' => $this->subscriptions()
+                ->whereBelongsTo(Auth::user())
+                ->exists(),
             'moderation' => $this->when(Auth::user()->isModerator(), [
                 'is_hidden' => $this->isHidden(),
                 'by_system' => $this->isCurrentlyModeratedBySystem(),
