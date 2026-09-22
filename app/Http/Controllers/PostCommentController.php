@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PostReaction;
+use App\Events\PostCommentCreated;
 use App\Http\Resources\PostCommentResource;
 use App\Http\Resources\PostReactionResource;
 use App\Models\Post;
