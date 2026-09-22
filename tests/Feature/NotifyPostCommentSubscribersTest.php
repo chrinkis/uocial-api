@@ -29,6 +29,7 @@ it('notifies subscribed users when a comment is created', function () {
         ->reason->toBe(NotificationReason::Owner)
         ->type->toBe(NotificationType::NewCommentToPost)
         ->entity_id->toBe($post->id)
+        ->post_id->toBe($post->id)
         ->and(Notification::where('user_id', $follower->id)->first())
         ->reason->toBe(NotificationReason::Follower)
         ->and(Notification::where('user_id', $commenter->id)->exists())->toBeFalse();
@@ -49,5 +50,6 @@ it('notifies parent comment subscribers for replies', function () {
     $notification = Notification::where('user_id', $parentOwner->id)->first();
     expect($notification)->not->toBeNull()
         ->type->toBe(NotificationType::NewCommentToPostComment)
-        ->entity_id->toBe($parent->id);
+        ->entity_id->toBe($parent->id)
+        ->post_id->toBe($post->id);
 });

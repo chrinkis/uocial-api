@@ -24,13 +24,16 @@ function acceptLegalDocuments(User $user): void
 
 function createNotificationFor(User $user, Post|PostComment $entity): Notification
 {
-    return $user->notifications()->create([
+    $notification = $user->notifications()->create([
         'reason' => NotificationReason::Owner,
         'type' => $entity instanceof Post
             ? NotificationType::NewModerationToPost
             : NotificationType::NewModerationToPostComment,
         'entity_id' => $entity->id,
     ]);
+    $notification->post()->associate($entity instanceof Post ? $entity : $entity->post)->save();
+
+    return $notification;
 }
 
 it('lists only the authenticated user notifications', function () {

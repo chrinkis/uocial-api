@@ -28,7 +28,8 @@ it('notifies the owner when the post is hidden by the system', function () {
     expect($notification)->not->toBeNull()
         ->reason->toBe(NotificationReason::Owner)
         ->type->toBe(NotificationType::NewModerationToPost)
-        ->entity_id->toBe($post->id);
+        ->entity_id->toBe($post->id)
+        ->post_id->toBe($post->id);
 });
 
 it('notifies the owner when the post is unhidden by a moderator', function () {
@@ -42,7 +43,8 @@ it('notifies the owner when the post is unhidden by a moderator', function () {
     expect($notification)->not->toBeNull()
         ->reason->toBe(NotificationReason::Owner)
         ->type->toBe(NotificationType::NewModerationToPost)
-        ->entity_id->toBe($post->id);
+        ->entity_id->toBe($post->id)
+        ->post_id->toBe($post->id);
 });
 
 it('notifies the owner when the comment is hidden by the system', function () {
@@ -62,7 +64,8 @@ it('notifies the owner when the comment is hidden by the system', function () {
     expect($notification)->not->toBeNull()
         ->reason->toBe(NotificationReason::Owner)
         ->type->toBe(NotificationType::NewModerationToPostComment)
-        ->entity_id->toBe($postComment->id);
+        ->entity_id->toBe($postComment->id)
+        ->post_id->toBe($post->id);
 });
 
 it('notifies the owner when the comment is unhidden by a moderator', function () {
@@ -78,5 +81,6 @@ it('notifies the owner when the comment is unhidden by a moderator', function ()
     expect($notification)->not->toBeNull()
         ->reason->toBe(NotificationReason::Owner)
         ->type->toBe(NotificationType::NewModerationToPostComment)
-        ->entity_id->toBe($postComment->id);
+        ->entity_id->toBe($postComment->id)
+        ->post_id->toBe($post->id);
 });

@@ -2,6 +2,7 @@
 
 use App\Enums\NotificationReason;
 use App\Enums\NotificationType;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -19,7 +20,8 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained();
             $table->enum('reason', NotificationReason::cases());
             $table->enum('type', NotificationType::cases());
-            $table->unsignedBigInteger('entity_id');
+            $table->foreignIdFor(Post::class)->nullable()->constrained();
+            $table->unsignedBigInteger('entity_id')->nullable();
             $table->boolean('read')->default(false);
             $table->timestamps();
         });

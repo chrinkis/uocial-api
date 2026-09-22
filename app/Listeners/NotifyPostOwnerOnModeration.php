@@ -10,10 +10,11 @@ class NotifyPostOwnerOnModeration
 {
     public function handle(PostModerated $event): void
     {
-        $event->post->user->notifications()->create([
+        $notification = $event->post->user->notifications()->create([
             'reason' => NotificationReason::Owner,
             'type' => NotificationType::NewModerationToPost,
             'entity_id' => $event->post->id,
         ]);
+        $notification->post()->associate($event->post)->save();
     }
 }

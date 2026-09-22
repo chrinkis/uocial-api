@@ -22,6 +22,7 @@ class NotifyPostCommentSubscribers
                 ->get(),
             NotificationType::NewCommentToPost,
             $comment->post_id,
+            $comment->post_id,
             $comment->post->user_id,
         );
 
@@ -33,6 +34,7 @@ class NotifyPostCommentSubscribers
                     ->where('user_id', '!=', $comment->user_id)
                     ->get(),
                 NotificationType::NewCommentToPostComment,
+                $comment->post_id,
                 $parentComment->id,
                 $parentComment->user_id,
             ));
@@ -47,7 +49,7 @@ class NotifyPostCommentSubscribers
      * @param  Collection<int, PostSubscription|PostCommentSubscription>  $subscriptions
      * @return Collection<int, array<string, mixed>>
      */
-    private function buildRows(Collection $subscriptions, NotificationType $type, int $entityId, int $ownerId): Collection
+    private function buildRows(Collection $subscriptions, NotificationType $type, int $postId, int $entityId, int $ownerId): Collection
     {
         return $subscriptions->map(fn ($subscription) => [
             'user_id' => $subscription->user_id,
@@ -55,6 +57,7 @@ class NotifyPostCommentSubscribers
                 ? NotificationReason::Owner->value
                 : NotificationReason::Follower->value,
             'type' => $type->value,
+            'post_id' => $postId,
             'entity_id' => $entityId,
             'created_at' => now(),
             'updated_at' => now(),
