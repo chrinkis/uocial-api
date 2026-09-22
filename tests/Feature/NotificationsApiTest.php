@@ -27,8 +27,8 @@ function createNotificationFor(User $user, Post|PostComment $entity): Notificati
     $notification = $user->notifications()->create([
         'reason' => NotificationReason::Owner,
         'type' => $entity instanceof Post
-            ? NotificationType::NewModerationToPost
-            : NotificationType::NewModerationToPostComment,
+            ? NotificationType::PostHiddenByModerator
+            : NotificationType::PostCommentHiddenByModerator,
         'entity_id' => $entity->id,
     ]);
     $notification->post()->associate($entity instanceof Post ? $entity : $entity->post)->save();

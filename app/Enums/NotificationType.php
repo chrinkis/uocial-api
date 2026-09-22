@@ -9,16 +9,26 @@ enum NotificationType: string
 {
     case NewCommentToPost = 'newCommentToPost';
     case NewCommentToPostComment = 'newCommentToPostComment';
-    case NewModerationToPost = 'newModerationToPost';
-    case NewModerationToPostComment = 'newModerationToPostComment';
+
+    case PostHiddenUntilReview = 'postHiddenUntilReview';
+    case PostHiddenByModerator = 'postHiddenByModerator';
+    case PostUnhiddenByModerator = 'postUnhiddenByModerator';
+
+    case PostCommentHiddenUntilReview = 'postCommentHiddenUntilReview';
+    case PostCommentHiddenByModerator = 'postCommentHiddenByModerator';
+    case PostCommentUnhiddenByModerator = 'postCommentUnhiddenByModerator';
 
     public function entityClass(): string
     {
         return match ($this) {
             self::NewCommentToPost,
-            self::NewModerationToPost => Post::class,
+            self::PostHiddenUntilReview,
+            self::PostHiddenByModerator,
+            self::PostUnhiddenByModerator => Post::class,
             self::NewCommentToPostComment,
-            self::NewModerationToPostComment => PostComment::class,
+            self::PostCommentHiddenUntilReview,
+            self::PostCommentHiddenByModerator,
+            self::PostCommentUnhiddenByModerator => PostComment::class,
         };
     }
 }
