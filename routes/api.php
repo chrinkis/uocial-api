@@ -9,6 +9,7 @@ use App\Http\Controllers\PostCommentReportController;
 use App\Http\Controllers\PostCommentReportReviewController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostModerationController;
+use App\Http\Controllers\PostPollController;
 use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
 use App\Http\Controllers\PrivacyPolicyController;
@@ -87,6 +88,10 @@ Route::prefix('app')
         Route::post('posts/{post}/subscribe', [PostController::class, 'subscribe']);
 
         Route::post('posts/{post}/unsubscribe', [PostController::class, 'unsubscribe']);
+
+        Route::post('posts/{post}/poll/{poll}/vote/{option}', [PostPollController::class, 'vote'])->scopeBindings();
+
+        Route::post('posts/{post}/poll/{poll}/unvote/{option}', [PostPollController::class, 'unvote'])->scopeBindings();
 
         Route::get('posts/{post}/reports', [PostReportController::class, 'index'])
             ->middleware(UserIsModerator::class);
