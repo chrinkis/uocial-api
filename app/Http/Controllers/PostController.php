@@ -34,12 +34,15 @@ class PostController extends Controller
      *   - pending_review?: boolean
      *   - pending_reports?: boolean
      *   - hashtag?: string
+     *   - moderator_mode?: boolean
      */
     public function index(Request $request): JsonResponse
     {
         $posts = Post::query();
 
-        if (Auth::user()->isModerator()) {
+        $wantsModerationView = $request->has('reported') || $request->has('pending_review') || $request->has('pending_reports');
+
+        if (Auth::user()->isModerator() && ($request->boolean('moderator_mode') || $wantsModerationView)) {
             $posts->withoutGlobalScope(NonHiddenPostScope::class);
         }
 

@@ -20,16 +20,20 @@ class PostCommentController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * params:
+     *   - moderator_mode?: boolean
      */
-    public function index(string $post): JsonResponse
+    public function index(Request $request, string $post): JsonResponse
     {
         $isModerator = Auth::user()->isModerator();
+        $bypassHiddenScope = $isModerator && $request->boolean('moderator_mode');
 
         $postModel = $isModerator
             ? Post::withoutGlobalScope(NonHiddenPostScope::class)->findOrFail($post)
             : Post::findOrFail($post);
 
-        $comments = $isModerator
+        $comments = $bypassHiddenScope
             ? $postModel->comments()->withoutGlobalScope(NonHiddenPostCommentScope::class)
             : $postModel->comments();
 
@@ -100,10 +104,14 @@ class PostCommentController extends Controller
 
     /**
      * Display a listing of the resource.
+     *
+     * params:
+     *   - moderator_mode?: boolean
      */
-    public function replies(string $post, string $postComment): JsonResponse
+    public function replies(Request $request, string $post, string $postComment): JsonResponse
     {
         $isModerator = Auth::user()->isModerator();
+        $bypassHiddenScope = $isModerator && $request->boolean('moderator_mode');
 
         if ($isModerator) {
             Post::withoutGlobalScope(NonHiddenPostScope::class)->findOrFail($post);
@@ -114,7 +122,7 @@ class PostCommentController extends Controller
             $postCommentModel = PostComment::findOrFail($postComment);
         }
 
-        $replies = $isModerator
+        $replies = $bypassHiddenScope
             ? $postCommentModel->replies()->withoutGlobalScope(NonHiddenPostCommentScope::class)
             : $postCommentModel->replies();
 
