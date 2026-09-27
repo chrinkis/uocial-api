@@ -79,6 +79,9 @@ class PostResource extends JsonResource
             'saved' => $this->savedByUsers()
                 ->where('user_id', Auth::user()->id)
                 ->exists(),
+            'poll' => ($poll = $this->polls()->first())
+                ? new PostPollResource($poll)
+                : null,
             'is_subscribed' => $this->subscriptions()
                 ->whereBelongsTo(Auth::user())
                 ->exists(),
