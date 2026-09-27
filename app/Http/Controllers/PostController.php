@@ -21,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class PostController extends Controller
@@ -237,10 +238,37 @@ class PostController extends Controller
                 },
 
             ],
+            'poll' => ['nullable', 'array'],
+            'poll.allow_multiple_votes' => ['sometimes', 'boolean'],
+            'poll.ends_at' => ['nullable', 'date', 'after:now'],
+            'poll.options' => ['required_with:poll', 'array', 'min:2', 'max:10'],
+            'poll.options.*' => ['required', 'string', 'distinct'],
         ]);
 
-        $post = Auth::user()->posts()
-            ->create($validated);
+        $post = DB::transaction(function () use ($request, $validated) {
+            $pollData = Arr::pull($validated, 'poll');
+
+            $post = Auth::user()->posts()
+                ->create($validated);
+
+            if ($pollData !== null) {
+                $poll = $post->polls()
+                    ->create([
+                        'allow_multiple_votes' => $request->boolean('poll.allow_multiple_votes'),
+                        'ends_at' => $pollData['ends_at'] ?? null,
+                    ]);
+
+                foreach ($pollData['options'] as $position => $name) {
+                    $poll->options()
+                        ->create([
+                            'name' => $name,
+                            'position' => $position,
+                        ]);
+                }
+            }
+
+            return $post;
+        });
 
         PostCreated::dispatch($post);
 
