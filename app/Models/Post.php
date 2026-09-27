@@ -51,6 +51,16 @@ class Post extends Model
     }
 
     /**
+     * Get the polls for the post.
+     *
+     * @return HasMany<PostPoll,$this>
+     */
+    public function polls(): HasMany
+    {
+        return $this->hasMany(PostPoll::class);
+    }
+
+    /**
      * Get the comments for the post.
      *
      * @return HasMany<PostComment,$this>
