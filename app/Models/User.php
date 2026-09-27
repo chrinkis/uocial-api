@@ -110,6 +110,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The poll votes of the user.
+     *
+     * @return HasMany<PostPollVote,User>
+     */
+    public function postPollVotes(): HasMany
+    {
+        return $this->hasMany(PostPollVote::class);
+    }
+
+    /**
      * Generate a pseudonym for this user within a specific context
      *
      * @param  int|string  $contextId  The ID of the owned resource
