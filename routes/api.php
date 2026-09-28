@@ -76,6 +76,9 @@ Route::prefix('app')
 
         Route::get('posts/comments', [PostController::class, 'comments']);
 
+        Route::get('posts/search', [PostController::class, 'search'])
+            ->middleware('throttle:posts-search');
+
         Route::apiResource('posts', PostController::class)
             ->only(['index', 'show', 'store']);
 

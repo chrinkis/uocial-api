@@ -223,6 +223,68 @@ class PostController extends Controller
     }
 
     /**
+     * Search posts.
+     *
+     * params:
+     *   - q: string (required, min 2 chars, or min 1 digit for a numeric id search)
+     *   - moderator_mode?: boolean
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'q' => [
+                'required',
+                'string',
+                'max:100',
+                function ($attribute, $value, $fail) {
+                    $trimmed = trim($value);
+                    $minLength = ctype_digit($trimmed) ? 1 : 2;
+
+                    if (mb_strlen($trimmed) < $minLength) {
+                        $fail("The $attribute must be at least $minLength characters.");
+                    }
+                },
+            ],
+        ]);
+
+        $term = trim($validated['q']);
+        $isNumeric = ctype_digit($term);
+        $likeTerm = '%'.addcslashes($term, '%_\\').'%';
+
+        $posts = Post::query();
+
+        if (Auth::user()->isModerator() && $request->boolean('moderator_mode')) {
+            $posts->withoutGlobalScope(NonHiddenPostScope::class);
+        }
+
+        $posts->selectRaw('posts.*')
+            ->selectRaw('MATCH(posts.title, posts.body) AGAINST (? IN NATURAL LANGUAGE MODE) as relevance', [$term])
+            ->selectRaw(
+                $isNumeric ? 'CASE WHEN posts.id = ? THEN 1 ELSE 0 END as id_match' : '0 as id_match',
+                $isNumeric ? [(int) $term] : []
+            );
+
+        $posts->where(function ($query) use ($term, $likeTerm, $isNumeric) {
+            $query->whereFullText(['title', 'body'], $term);
+
+            if ($isNumeric) {
+                $query->orWhere('id', (int) $term);
+            }
+
+            $query->orWhereHas('hashtags', fn ($q) => $q->where('name', 'like', $likeTerm));
+
+            $query->orWhereHas('polls.options', fn ($q) => $q->where('name', 'like', $likeTerm));
+        });
+
+        $posts->orderByDesc('id_match')
+            ->orderByDesc('relevance')
+            ->orderByDesc('id');
+
+        return PostResource::collection($posts->paginate(8))
+            ->response();
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse

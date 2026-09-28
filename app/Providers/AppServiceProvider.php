@@ -58,6 +58,13 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()->id);
         });
 
+        RateLimiter::for('posts-search', function (Request $request) {
+            assert($request->user() !== null);
+
+            return Limit::perMinute(30)
+                ->by($request->user()->id);
+        });
+
         RateLimiter::for('login', function (Request $request) {
             $email = $request->input('email', '');
             assert(is_string($email));
