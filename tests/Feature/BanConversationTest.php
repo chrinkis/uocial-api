@@ -143,6 +143,28 @@ it('lets an admin close and reopen a thread, blocking posts while closed', funct
     $this->postJson("/api/app/bans/{$ban->id}/messages", ['body' => 'Back'])->assertCreated();
 });
 
+it('does not let an admin close or reopen the thread of a lifted ban', function () {
+    $user = User::factory()->create();
+    $admin = User::factory()->admin()->create();
+    $ban = banFor($user, $admin);
+    $ban->closeThread($admin);
+    $user->unban($admin);
+
+    Sanctum::actingAs($admin);
+
+    $this->postJson("/api/app/bans/{$ban->id}/thread/reopen")
+        ->assertConflict()
+        ->assertJsonPath('message', 'This ban has been lifted, so its conversation cannot be changed.');
+
+    expect($ban->fresh()->threadClosed())->toBeTrue();
+
+    $this->postJson("/api/app/bans/{$ban->id}/thread/close")->assertConflict();
+
+    $ban->refresh();
+    $ban->reopenThread();
+    expect($ban->threadClosed())->toBeFalse();
+});
+
 it('does not let a moderator close or reopen a thread', function () {
     $user = User::factory()->create();
     $moderator = User::factory()->moderator()->create();

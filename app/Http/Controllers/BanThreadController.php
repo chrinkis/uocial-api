@@ -15,6 +15,10 @@ class BanThreadController extends Controller
     {
         $this->authorize('manage', UserBan::class);
 
+        if ($ban->lifted_at !== null) {
+            return $this->liftedResponse();
+        }
+
         $ban->closeThread(Auth::user());
 
         return response()->json([
@@ -29,10 +33,24 @@ class BanThreadController extends Controller
     {
         $this->authorize('manage', UserBan::class);
 
+        if ($ban->lifted_at !== null) {
+            return $this->liftedResponse();
+        }
+
         $ban->reopenThread();
 
         return response()->json([
             'message' => 'Conversation reopened',
         ]);
+    }
+
+    /**
+     * The conversation of a lifted ban is final, so it cannot be closed or reopened.
+     */
+    private function liftedResponse(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'This ban has been lifted, so its conversation cannot be changed.',
+        ], 409);
     }
 }
