@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             PrivacyPolicyAcceptanceSeeder::class,
             TermsOfUseAcceptanceSeeder::class,
             UserBanSeeder::class,
+            UserBanMessageSeeder::class,
         ]);
     }
 }

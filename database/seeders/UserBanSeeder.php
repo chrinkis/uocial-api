@@ -20,6 +20,7 @@ class UserBanSeeder extends Seeder
         'regular@uoc.gr',
         'moderator@uoc.gr',
         'admin@uoc.gr',
+        'banned@uoc.gr',
     ];
 
     /**
@@ -52,6 +53,12 @@ class UserBanSeeder extends Seeder
             ->for($user)
             ->lifted()
             ->create());
+
+        // The banned@uoc.gr account always has one permanent, active ban.
+        $bannedUser = User::firstWhere('email', 'banned@uoc.gr');
+        UserBan::factory()
+            ->for($bannedUser)
+            ->create(['reason' => 'Repeated spam in posts']);
 
         // A repeat offender: one lifted ban followed by a new active one.
         $users->splice(0, 1)->each(function (User $user) {

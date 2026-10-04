@@ -36,6 +36,10 @@ class UserSeeder extends Seeder
             ->create();
 
         User::factory()
+            ->state(['email' => 'banned@uoc.gr', 'password' => 'password'])
+            ->create();
+
+        User::factory()
             ->unverified()
             ->count(12)
             ->create();

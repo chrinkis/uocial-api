@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\UserBanMessageFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserBanMessage extends Model
 {
+    /** @use HasFactory<UserBanMessageFactory> */
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *
