@@ -65,6 +65,16 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()->id);
         });
 
+        RateLimiter::for('ban-messages', function (Request $request) {
+            assert($request->user() !== null);
+
+            $ban = $request->route('ban');
+            $banId = is_object($ban) ? $ban->getKey() : $ban;
+
+            return Limit::perMinute(1)
+                ->by($request->user()->id.':ban:'.$banId);
+        });
+
         RateLimiter::for('login', function (Request $request) {
             $email = $request->input('email', '');
             assert(is_string($email));

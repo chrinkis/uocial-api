@@ -25,6 +25,7 @@ class UserBanResource extends JsonResource
             'is_active' => $this->isActive(),
             'lifted_at' => $this->lifted_at,
             'lifted_by' => $this->lifted_by,
+            'thread_closed' => $this->threadClosed(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -20,12 +20,6 @@ beforeEach(function () {
     ]);
 });
 
-function loginFromStatefulFrontend(array $credentials): TestResponse
-{
-    return test()->withHeader('Origin', 'http://localhost')
-        ->postJson('/api/auth/login', $credentials);
-}
-
 function altchaSolutionForTests(): string
 {
     $altcha = new Altcha(hmacSignatureSecret: 'test-hmac-key');
@@ -43,6 +37,12 @@ function altchaSolutionForTests(): string
     return (new Payload($challenge, $solution))->toBase64();
 }
 
+function loginFromStatefulFrontend(array $credentials): TestResponse
+{
+    return test()->withHeader('Origin', 'http://localhost')
+        ->postJson('/api/auth/login', $credentials);
+}
+
 function acceptLegalDocumentsForBanTest(User $user): void
 {
     $privacyPolicy = PrivacyPolicy::latest('id')->first() ?? PrivacyPolicy::factory()->create();
@@ -52,10 +52,10 @@ function acceptLegalDocumentsForBanTest(User $user): void
     $user->acceptedTermsOfUses()->attach($termsOfUse->id);
 }
 
-it('blocks a banned user from logging in', function () {
+it('lets a banned user log in and reports the active ban id', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
-    $user->ban('Spam', $admin);
+    $ban = $user->ban('Spam', $admin);
 
     loginFromStatefulFrontend([
         'email' => $user->email,
@@ -63,14 +63,11 @@ it('blocks a banned user from logging in', function () {
         'remember' => false,
         'altcha' => altchaSolutionForTests(),
     ])
-        ->assertForbidden()
-        ->assertJsonPath('message', 'Your account has been banned.')
-        ->assertJsonPath('reason', 'Spam');
-
-    expect($user->fresh()->tokens()->count())->toBe(0);
+        ->assertOk()
+        ->assertJsonPath('active_ban_id', $ban->id);
 });
 
-it('lets a user without a ban log in', function () {
+it('lets a user without a ban log in with no active ban id', function () {
     $user = User::factory()->create();
 
     loginFromStatefulFrontend([
@@ -78,38 +75,39 @@ it('lets a user without a ban log in', function () {
         'password' => 'password',
         'remember' => false,
         'altcha' => altchaSolutionForTests(),
-    ])->assertOk();
+    ])
+        ->assertOk()
+        ->assertJsonPath('active_ban_id', null);
 });
 
-it('blocks a banned user from creating a new token', function () {
+it('lets a banned user create a new token and reports the active ban id', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
-    $user->ban('Spam', $admin);
+    $ban = $user->ban('Spam', $admin);
 
     $this->postJson('/api/auth/token/generate', [
         'email' => $user->email,
         'password' => 'password',
     ])
-        ->assertForbidden()
-        ->assertJsonPath('message', 'Your account has been banned.');
+        ->assertOk()
+        ->assertJsonPath('active_ban_id', $ban->id);
 
-    expect($user->tokens()->count())->toBe(0);
+    expect($user->tokens()->count())->toBe(1);
 });
 
-it('blocks an existing api token while the user is banned', function () {
+it('lets a banned user with an existing token reach /api/user with the active ban id', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
     $token = $user->createToken('device')->plainTextToken;
-
-    $user->ban('Spam', $admin);
+    $ban = $user->ban('Spam', $admin);
 
     $this->withHeader('Authorization', 'Bearer '.$token)
         ->getJson('/api/user')
-        ->assertForbidden()
-        ->assertJsonPath('message', 'Your account has been banned.');
+        ->assertOk()
+        ->assertJsonPath('data.active_ban_id', $ban->id);
 });
 
-it('blocks an existing api token on app routes while the user is banned', function () {
+it('blocks a banned user with an existing token on normal app routes', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
     acceptLegalDocumentsForBanTest($user);
@@ -123,33 +121,35 @@ it('blocks an existing api token on app routes while the user is banned', functi
         ->assertJsonPath('message', 'Your account has been banned.');
 });
 
-it('restores api token access once the ban is lifted', function () {
+it('restores app access once the ban is lifted', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
+    acceptLegalDocumentsForBanTest($user);
     $token = $user->createToken('device')->plainTextToken;
 
     $user->ban('Spam', $admin);
     $user->unban($admin);
 
     $this->withHeader('Authorization', 'Bearer '.$token)
-        ->getJson('/api/user')
+        ->getJson('/api/app/notifications')
         ->assertOk();
 });
 
-it('restores api token access once the ban expires', function () {
+it('restores app access once the ban expires', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
+    acceptLegalDocumentsForBanTest($user);
     $token = $user->createToken('device')->plainTextToken;
 
     $user->ban('Spam', $admin, now()->addMinute());
 
     $this->withHeader('Authorization', 'Bearer '.$token)
-        ->getJson('/api/user')
+        ->getJson('/api/app/notifications')
         ->assertForbidden();
 
     $this->travel(2)->minutes();
 
     $this->withHeader('Authorization', 'Bearer '.$token)
-        ->getJson('/api/user')
+        ->getJson('/api/app/notifications')
         ->assertOk();
 });

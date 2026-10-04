@@ -39,7 +39,7 @@ class UserBannedNotification extends Notification implements ShouldQueue
         }
 
         return $message->line(
-            'If you believe this ban is a mistake, please contact us at '.config('mail.from.address').'.'
+            'If you believe this ban is a mistake, you can respond in the app, in the ban conversation.'
         );
     }
 }

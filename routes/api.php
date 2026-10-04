@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BanReviewController;
+use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
 use App\Http\Controllers\PostCommentModerationController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\PostReportReviewController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\TermsOfUseController;
 use App\Http\Controllers\UserBanController;
+use App\Http\Controllers\UserBanMessageController;
 use App\Http\Middleware\UserHasAcceptedLegalDocuments;
 use App\Http\Middleware\UserIsAdmin;
 use App\Http\Middleware\UserIsModerator;
@@ -26,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/user', function (Request $request) {
     // return $request->user();
     return new UserResource($request->user());
-})->middleware(['auth:sanctum', UserIsNotBanned::class]);
+})->middleware('auth:sanctum');
 
 Route::get('altcha/challenge', [AltchaController::class, 'challenge']);
 
@@ -38,7 +41,7 @@ Route::prefix('auth')
         Route::post('token/generate', [AuthController::class, 'getToken'])
             ->middleware('throttle:login');
         Route::post('token/revoke', [AuthController::class, 'revokeToken'])
-            ->middleware(['auth:sanctum', UserIsNotBanned::class]);
+            ->middleware('auth:sanctum');
         Route::post('register', [AuthController::class, 'register']);
         Route::post('password/forgot', [AuthController::class, 'forgotPassword'])
             ->middleware('guest')
@@ -50,7 +53,7 @@ Route::prefix('auth')
             ->middleware(['auth', 'signed'])
             ->name('verification.verify');
         Route::post('/email/resend-verification', [AuthController::class, 'resendVerification'])
-            ->middleware(['auth', UserIsNotBanned::class, 'throttle:email-verification'])
+            ->middleware(['auth', 'throttle:email-verification'])
             ->name('verification.send');
     });
 
@@ -63,6 +66,24 @@ Route::prefix('legal')->group(function () {
         Route::post('terms-of-use/accept', [TermsOfUseController::class, 'accept']);
     });
 });
+
+// Reachable while banned: the ban conversation only.
+Route::prefix('app')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('bans/{ban}/messages', [UserBanMessageController::class, 'index']);
+
+        Route::post('bans/{ban}/messages', [UserBanMessageController::class, 'store'])
+            ->middleware('throttle:ban-messages');
+
+        Route::middleware(UserIsAdmin::class)->group(function () {
+            Route::get('ban-reviews', [BanReviewController::class, 'index']);
+
+            Route::post('bans/{ban}/thread/close', [BanThreadController::class, 'close']);
+
+            Route::post('bans/{ban}/thread/reopen', [BanThreadController::class, 'reopen']);
+        });
+    });
 
 Route::prefix('app')
     ->middleware(['auth:sanctum', UserIsNotBanned::class, 'verified', UserHasAcceptedLegalDocuments::class])

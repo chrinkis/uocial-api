@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserBan extends Model
 {
@@ -42,6 +43,7 @@ class UserBan extends Model
             'banned_at' => 'datetime',
             'expires_at' => 'datetime',
             'lifted_at' => 'datetime',
+            'thread_closed_at' => 'datetime',
         ];
     }
 
@@ -70,6 +72,59 @@ class UserBan extends Model
     }
 
     /**
+     * Whether the admins have closed the conversation for this ban.
+     */
+    public function threadClosed(): bool
+    {
+        return $this->thread_closed_at !== null;
+    }
+
+    /**
+     * Close the conversation so no one can post to it.
+     */
+    public function closeThread(User $closedBy): void
+    {
+        $this->thread_closed_at = now();
+        $this->threadClosedBy()->associate($closedBy);
+        $this->save();
+    }
+
+    /**
+     * Reopen a closed conversation.
+     */
+    public function reopenThread(): void
+    {
+        $this->thread_closed_at = null;
+        $this->threadClosedBy()->dissociate();
+        $this->save();
+    }
+
+    /**
+     * Number of messages the banned user has sent since the last moderator reply.
+     */
+    public function unansweredUserMessages(): int
+    {
+        $lastModeratorMessageId = $this->messages()
+            ->where('sender_id', '!=', $this->user_id)
+            ->max('id') ?? 0;
+
+        return $this->messages()
+            ->where('sender_id', $this->user_id)
+            ->where('id', '>', $lastModeratorMessageId)
+            ->count();
+    }
+
+    /**
+     * The messages exchanged in this ban's conversation. Order them where they are listed.
+     *
+     * @return HasMany<UserBanMessage,$this>
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(UserBanMessage::class);
+    }
+
+    /**
      * The user that is banned.
      *
      * @return BelongsTo<User,$this>
@@ -87,6 +142,16 @@ class UserBan extends Model
     public function bannedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'banned_by');
+    }
+
+    /**
+     * The admin that closed the conversation.
+     *
+     * @return BelongsTo<User,$this>
+     */
+    public function threadClosedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'thread_closed_by');
     }
 
     /**

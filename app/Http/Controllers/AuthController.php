@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\UserBannedException;
 use App\Models\PrivacyPolicy;
 use App\Models\TermsOfUse;
 use App\Models\User;
@@ -48,10 +47,6 @@ class AuthController extends Controller
         $user = User::firstWhere('email', $credentials['email']);
         assert($user !== null);
 
-        if ($ban = $user->activeBan()) {
-            throw new UserBannedException($ban);
-        }
-
         Auth::login($user, (bool) $credentials['remember']);
 
         $request->session()->regenerate();
@@ -59,6 +54,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Welcome, '.$user->name,
             'user' => $user,
+            'active_ban_id' => $user->activeBan()?->id,
         ]);
     }
 
@@ -85,10 +81,6 @@ class AuthController extends Controller
         $user = User::firstWhere('email', $validated['email']);
         assert($user !== null);
 
-        if ($ban = $user->activeBan()) {
-            throw new UserBannedException($ban);
-        }
-
         $tokenName = $validated['token_name'] ?? 'token'.now()->timestamp;
         assert(is_string($tokenName));
 
@@ -98,6 +90,7 @@ class AuthController extends Controller
             'message' => 'Welcome, '.$user->name,
             'user' => $user,
             'token' => $token,
+            'active_ban_id' => $user->activeBan()?->id,
         ]);
     }
 

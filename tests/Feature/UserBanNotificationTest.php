@@ -33,7 +33,7 @@ it('describes the reason and expiry in the ban email', function () {
         ->and($mail->greeting)->toBe('Hello Ada,')
         ->and($mail->introLines)->toContain('Reason: Spam')
         ->and(implode(' ', $mail->introLines))->toContain('The ban expires on')
-        ->and(implode(' ', $mail->introLines))->toContain('contact us at '.config('mail.from.address'));
+        ->and(implode(' ', $mail->introLines))->toContain('respond in the app');
 });
 
 it('says a ban is permanent when there is no expiry', function () {

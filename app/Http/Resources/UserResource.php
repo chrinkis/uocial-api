@@ -24,6 +24,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'email_verified_at' => $this->email_verified_at,
             'role' => $this->role?->name,
+            'active_ban_id' => $this->activeBan()?->id,
             'legal' => [
                 'privacy_policy' => [
                     'needs_acceptance' => $latestPrivacyPolicy !== null
