@@ -324,6 +324,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $lifted = $this->bans()->active()->update([
             'lifted_at' => now(),
             'lifted_by' => $liftedBy->id,
+            'updated_at' => now(),
         ]);
 
         if ($lifted > 0) {

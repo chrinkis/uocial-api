@@ -230,6 +230,32 @@ it('lists the bans that are not pending review when the filter is false', functi
         ->assertJsonCount(2, 'data');
 });
 
+it('sorts bans by the most recent activity, counting messages and lifts', function () {
+    $admin = User::factory()->admin()->create();
+
+    $first = banFor(User::factory()->create(), $admin);
+    $this->travel(1)->minutes();
+    $second = banFor(User::factory()->create(), $admin);
+    $this->travel(1)->minutes();
+    $third = banFor(User::factory()->create(), $admin);
+
+    // A new message on the oldest ban makes it the most recent.
+    $this->travel(1)->minutes();
+    messageFrom($first, $first->user, 'Mistake');
+
+    // Lifting the second ban counts as activity too.
+    $this->travel(1)->minutes();
+    $second->user->unban($admin);
+
+    Sanctum::actingAs($admin);
+
+    $this->getJson('/api/app/bans')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', $second->id)
+        ->assertJsonPath('data.1.id', $first->id)
+        ->assertJsonPath('data.2.id', $third->id);
+});
+
 it('forbids moderators from listing bans', function () {
     Sanctum::actingAs(User::factory()->moderator()->create());
 

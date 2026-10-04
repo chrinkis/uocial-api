@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\UserBanResource;
 use App\Models\User;
 use App\Models\UserBan;
+use App\Models\UserBanMessage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,6 +40,14 @@ class UserBanController extends Controller
         ]);
 
         $bans = UserBan::query()
+            ->select('user_bans.*')
+            ->addSelect([
+                'last_message_at' => UserBanMessage::query()
+                    ->select('created_at')
+                    ->whereColumn('user_ban_id', 'user_bans.id')
+                    ->latest('id')
+                    ->limit(1),
+            ])
             ->when($request->has('pending_review'), function (Builder $query) use ($request) {
                 if ($request->boolean('pending_review')) {
                     $query->pendingReview();
@@ -48,6 +57,7 @@ class UserBanController extends Controller
 
                 $query->whereNot(fn (Builder $query) => $query->pendingReview());
             })
+            ->orderByRaw('CASE WHEN last_message_at > updated_at THEN last_message_at ELSE updated_at END DESC')
             ->orderByDesc('id')
             ->paginate(8);
 
