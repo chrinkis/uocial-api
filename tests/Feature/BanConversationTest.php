@@ -152,45 +152,65 @@ it('does not let a moderator close or reopen a thread', function () {
     $this->postJson("/api/app/bans/{$ban->id}/thread/close")->assertForbidden();
 });
 
-it('lists ban reviews where the banned user spoke last on an active open thread', function () {
+it('lists bans pending review where the banned user spoke last on an active open thread', function () {
     $admin = User::factory()->admin()->create();
     $moderator = User::factory()->moderator()->create();
 
-    // Included: active, open, the user spoke last.
-    $included = banFor(User::factory()->create(), $admin);
-    messageFrom($included, $moderator, 'Why?');
-    messageFrom($included, $included->user, 'Mistake');
+    // Pending: active, open, the user spoke last.
+    $pending = banFor(User::factory()->create(), $admin);
+    messageFrom($pending, $moderator, 'Why?');
+    messageFrom($pending, $pending->user, 'Mistake');
 
-    // Excluded: a moderator spoke last.
+    // Not pending: a moderator spoke last.
     $moderatorLast = banFor(User::factory()->create(), $admin);
     messageFrom($moderatorLast, $moderatorLast->user, 'Please');
     messageFrom($moderatorLast, $moderator, 'No');
 
-    // Excluded: lifted.
+    // Not pending: lifted.
     $lifted = banFor(User::factory()->create(), $admin);
     messageFrom($lifted, $lifted->user, 'Hi');
     $lifted->user->unban($admin);
 
-    // Excluded: thread closed.
+    // Not pending: thread closed.
     $closed = banFor(User::factory()->create(), $admin);
     messageFrom($closed, $closed->user, 'Hi');
     $closed->closeThread($admin);
 
     Sanctum::actingAs($admin);
 
-    $this->getJson('/api/app/ban-reviews')
+    $this->getJson('/api/app/bans?pending_review=true')
         ->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.ban_id', $included->id)
-        ->assertJsonPath('data.0.thread_closed', false)
-        ->assertJsonCount(2, 'data.0.messages')
-        ->assertJsonPath('data.0.messages.0.sender', 'moderator')
-        ->assertJsonPath('data.0.messages.1.sender', 'user')
-        ->assertJsonMissingPath('data.0.messages.0.sender_id');
+        ->assertJsonPath('data.0.id', $pending->id)
+        ->assertJsonPath('data.0.is_active', true)
+        ->assertJsonMissingPath('data.0.messages');
 });
 
-it('forbids moderators from ban reviews', function () {
+it('lists the bans that are not pending review when the filter is false', function () {
+    $admin = User::factory()->admin()->create();
+    $moderator = User::factory()->moderator()->create();
+
+    $pending = banFor(User::factory()->create(), $admin);
+    messageFrom($pending, $pending->user, 'Mistake');
+
+    $moderatorLast = banFor(User::factory()->create(), $admin);
+    messageFrom($moderatorLast, $moderatorLast->user, 'Please');
+    messageFrom($moderatorLast, $moderator, 'No');
+
+    Sanctum::actingAs($admin);
+
+    $this->getJson('/api/app/bans?pending_review=false')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $moderatorLast->id);
+
+    $this->getJson('/api/app/bans')
+        ->assertOk()
+        ->assertJsonCount(2, 'data');
+});
+
+it('forbids moderators from listing bans', function () {
     Sanctum::actingAs(User::factory()->moderator()->create());
 
-    $this->getJson('/api/app/ban-reviews')->assertForbidden();
+    $this->getJson('/api/app/bans?pending_review=true')->assertForbidden();
 });

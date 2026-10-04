@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BanReviewController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
@@ -77,7 +76,7 @@ Route::prefix('app')
             ->middleware('throttle:ban-messages');
 
         Route::middleware(UserIsAdmin::class)->group(function () {
-            Route::get('ban-reviews', [BanReviewController::class, 'index']);
+            Route::get('bans', [UserBanController::class, 'list']);
 
             Route::post('bans/{ban}/thread/close', [BanThreadController::class, 'close']);
 

@@ -63,6 +63,26 @@ class UserBan extends Model
     }
 
     /**
+     * Scope a query to active bans where the banned user wrote the last message
+     * and the thread is still open, so an admin should review it.
+     *
+     * @param  Builder<UserBan>  $query
+     */
+    #[Scope]
+    protected function pendingReview(Builder $query): void
+    {
+        $latestMessageIds = UserBanMessage::query()
+            ->selectRaw('MAX(id)')
+            ->groupBy('user_ban_id');
+
+        $query->active()
+            ->whereNull('thread_closed_at')
+            ->whereHas('messages', fn (Builder $query) => $query
+                ->whereIn('id', $latestMessageIds)
+                ->whereColumn('sender_id', 'user_bans.user_id'));
+    }
+
+    /**
      * Whether the ban is in force: not lifted and not yet expired.
      */
     public function isActive(): bool

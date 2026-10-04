@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserBanResource;
 use App\Models\User;
+use App\Models\UserBan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UserBanController extends Controller
 {
@@ -16,6 +19,35 @@ class UserBanController extends Controller
     public function index(User $user): JsonResponse
     {
         $bans = $user->bans()
+            ->orderByDesc('id')
+            ->paginate(8);
+
+        return UserBanResource::collection($bans)
+            ->response();
+    }
+
+    /**
+     * Display all bans, optionally filtered by whether they are pending review.
+     *
+     * params:
+     *   - pending_review?: boolean
+     */
+    public function list(Request $request): JsonResponse
+    {
+        $request->validate([
+            'pending_review' => ['sometimes', Rule::in(['true', 'false', '1', '0'])],
+        ]);
+
+        $bans = UserBan::query()
+            ->when($request->has('pending_review'), function (Builder $query) use ($request) {
+                if ($request->boolean('pending_review')) {
+                    $query->pendingReview();
+
+                    return;
+                }
+
+                $query->whereNot(fn (Builder $query) => $query->pendingReview());
+            })
             ->orderByDesc('id')
             ->paginate(8);
 
