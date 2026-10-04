@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\UserBannedException;
 use App\Models\PrivacyPolicy;
 use App\Models\TermsOfUse;
 use App\Models\User;
@@ -36,7 +37,9 @@ class AuthController extends Controller
         ]);
         assert(is_array($credentials));
 
-        if (! Auth::attempt(Arr::only($credentials, ['email', 'password']), (bool) $credentials['remember'])) {
+        $loginCredentials = Arr::only($credentials, ['email', 'password']);
+
+        if (! Auth::validate($loginCredentials)) {
             return response()->json([
                 'message' => 'Invalid Credentials',
             ], 401);
@@ -44,6 +47,12 @@ class AuthController extends Controller
 
         $user = User::firstWhere('email', $credentials['email']);
         assert($user !== null);
+
+        if ($ban = $user->activeBan()) {
+            throw new UserBannedException($ban);
+        }
+
+        Auth::login($user, (bool) $credentials['remember']);
 
         $request->session()->regenerate();
 
@@ -67,14 +76,18 @@ class AuthController extends Controller
             'password' => $validated['password'],
         ];
 
-        if (! Auth::attempt($credentials)) {
+        if (! Auth::validate($credentials)) {
             return response()->json([
                 'message' => 'Invalid Credentials',
             ], 401);
         }
 
-        $user = Auth::user();
+        $user = User::firstWhere('email', $validated['email']);
         assert($user !== null);
+
+        if ($ban = $user->activeBan()) {
+            throw new UserBannedException($ban);
+        }
 
         $tokenName = $validated['token_name'] ?? 'token'.now()->timestamp;
         assert(is_string($tokenName));

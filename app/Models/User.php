@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Notifications\UserBannedNotification;
+use App\Notifications\UserUnbannedNotification;
+use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -183,6 +186,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === UserRole::Admin || $this->role === UserRole::Moderator;
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
     /**
      * Get the reviews of post reports user has created.
      *
@@ -257,5 +265,71 @@ class User extends Authenticatable implements MustVerifyEmail
     public function acceptedTermsOfUses(): BelongsToMany
     {
         return $this->belongsToMany(TermsOfUse::class, 'terms_of_use_acceptances');
+    }
+
+    /**
+     * The bans issued against the user.
+     *
+     * @return HasMany<UserBan,$this>
+     */
+    public function bans(): HasMany
+    {
+        return $this->hasMany(UserBan::class);
+    }
+
+    /**
+     * Whether the user currently has an active, unexpired ban.
+     */
+    public function isBanned(): bool
+    {
+        return $this->activeBan() !== null;
+    }
+
+    /**
+     * The most recent active, unexpired ban on the user, if any.
+     */
+    public function activeBan(): ?UserBan
+    {
+        return $this->bans()->active()->latest('id')->first();
+    }
+
+    /**
+     * Ban the user.
+     *
+     * Usage (tinker): User::find(1)->ban('Spam', User::find(2), now()->addDays(7), 'Notes');
+     */
+    public function ban(string $reason, User $bannedBy, ?CarbonInterface $expiresAt = null, ?string $notes = null): UserBan
+    {
+        $ban = new UserBan([
+            'reason' => $reason,
+            'banned_at' => now(),
+            'expires_at' => $expiresAt,
+            'notes' => $notes,
+        ]);
+        $ban->bannedBy()->associate($bannedBy);
+        $this->bans()->save($ban);
+
+        $this->notify(new UserBannedNotification($ban));
+
+        return $ban;
+    }
+
+    /**
+     * Lift all active bans on the user.
+     *
+     * Usage (tinker): User::find(1)->unban(User::find(2));
+     */
+    public function unban(User $liftedBy): int
+    {
+        $lifted = $this->bans()->active()->update([
+            'lifted_at' => now(),
+            'lifted_by' => $liftedBy->id,
+        ]);
+
+        if ($lifted > 0) {
+            $this->notify(new UserUnbannedNotification);
+        }
+
+        return $lifted;
     }
 }

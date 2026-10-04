@@ -14,8 +14,11 @@ use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\TermsOfUseController;
+use App\Http\Controllers\UserBanController;
 use App\Http\Middleware\UserHasAcceptedLegalDocuments;
+use App\Http\Middleware\UserIsAdmin;
 use App\Http\Middleware\UserIsModerator;
+use App\Http\Middleware\UserIsNotBanned;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/user', function (Request $request) {
     // return $request->user();
     return new UserResource($request->user());
-})->middleware('auth:sanctum');
+})->middleware(['auth:sanctum', UserIsNotBanned::class]);
 
 Route::get('altcha/challenge', [AltchaController::class, 'challenge']);
 
@@ -35,7 +38,7 @@ Route::prefix('auth')
         Route::post('token/generate', [AuthController::class, 'getToken'])
             ->middleware('throttle:login');
         Route::post('token/revoke', [AuthController::class, 'revokeToken'])
-            ->middleware('auth:sanctum');
+            ->middleware(['auth:sanctum', UserIsNotBanned::class]);
         Route::post('register', [AuthController::class, 'register']);
         Route::post('password/forgot', [AuthController::class, 'forgotPassword'])
             ->middleware('guest')
@@ -47,7 +50,7 @@ Route::prefix('auth')
             ->middleware(['auth', 'signed'])
             ->name('verification.verify');
         Route::post('/email/resend-verification', [AuthController::class, 'resendVerification'])
-            ->middleware(['auth', 'throttle:email-verification'])
+            ->middleware(['auth', UserIsNotBanned::class, 'throttle:email-verification'])
             ->name('verification.send');
     });
 
@@ -55,14 +58,14 @@ Route::prefix('legal')->group(function () {
     Route::get('privacy-policy', [PrivacyPolicyController::class, 'show']);
     Route::get('terms-of-use', [TermsOfUseController::class, 'show']);
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', UserIsNotBanned::class])->group(function () {
         Route::post('privacy-policy/accept', [PrivacyPolicyController::class, 'accept']);
         Route::post('terms-of-use/accept', [TermsOfUseController::class, 'accept']);
     });
 });
 
 Route::prefix('app')
-    ->middleware(['auth:sanctum', 'verified', UserHasAcceptedLegalDocuments::class])
+    ->middleware(['auth:sanctum', UserIsNotBanned::class, 'verified', UserHasAcceptedLegalDocuments::class])
     ->group(function () {
         Route::get('posts/saved', [PostController::class, 'saved']);
 
@@ -135,4 +138,11 @@ Route::prefix('app')
         Route::apiResource('posts.comments.moderations', PostCommentModerationController::class)
             ->only(['store'])
             ->middleware(UserIsModerator::class);
+
+        Route::apiResource('users.bans', UserBanController::class)
+            ->only(['index', 'store'])
+            ->middleware(UserIsAdmin::class);
+
+        Route::post('users/{user}/unban', [UserBanController::class, 'unban'])
+            ->middleware(UserIsAdmin::class);
     });

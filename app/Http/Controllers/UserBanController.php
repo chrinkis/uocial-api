@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Resources\UserBanResource;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class UserBanController extends Controller
+{
+    /**
+     * Display the ban history of the user.
+     */
+    public function index(User $user): JsonResponse
+    {
+        $bans = $user->bans()
+            ->orderByDesc('id')
+            ->paginate(8);
+
+        return UserBanResource::collection($bans)
+            ->response();
+    }
+
+    /**
+     * Ban the user.
+     *
+     * params:
+     *   - reason: string
+     *   - expires_at?: date (omit for a permanent ban)
+     *   - notes?: string
+     */
+    public function store(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['required', 'filled', 'string'],
+            'expires_at' => ['nullable', 'date', 'after:now'],
+            'notes' => ['nullable', 'string'],
+        ]);
+
+        if ($user->is(Auth::user())) {
+            return response()->json([
+                'message' => 'You cannot ban yourself',
+            ], 422);
+        }
+
+        if ($user->isBanned()) {
+            return response()->json([
+                'message' => 'User is already banned',
+            ], 409);
+        }
+
+        $ban = $user->ban(
+            $validated['reason'],
+            Auth::user(),
+            $request->date('expires_at'),
+            $validated['notes'] ?? null,
+        );
+
+        return (new UserBanResource($ban))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    /**
+     * Lift the active bans of the user.
+     */
+    public function unban(User $user): JsonResponse
+    {
+        if (! $user->isBanned()) {
+            return response()->json([
+                'message' => 'User is not banned',
+            ], 409);
+        }
+
+        $user->unban(Auth::user());
+
+        return response()->json([
+            'message' => 'Ban was lifted',
+        ]);
+    }
+}
