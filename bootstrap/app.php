@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustHosts(at: fn () => config('app.trusted_hosts'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontReport(UserBannedException::class);
+
         $exceptions->render(function (UserBannedException $exception) {
             return response()->json([
                 'message' => 'Your account has been banned.',
