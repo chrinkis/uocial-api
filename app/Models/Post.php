@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\ModerationAction;
 use App\Models\Scopes\NonHiddenPostScope;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -153,5 +155,34 @@ class Post extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(PostSubscription::class);
+    }
+
+    /**
+     * Scope a query to posts whose latest moderation was applied by the system and is awaiting a moderator.
+     *
+     * @param  Builder<Post>  $query
+     */
+    #[Scope]
+    protected function pendingReview(Builder $query): void
+    {
+        $query->whereHas('moderations', function (Builder $query) {
+            $query->whereNull('user_id')
+                ->whereRaw('created_at = (
+                    SELECT MAX(created_at)
+                    FROM post_moderations
+                    WHERE post_moderations.post_id = posts.id
+                )');
+        });
+    }
+
+    /**
+     * Scope a query to posts that have at least one report nobody has reviewed yet.
+     *
+     * @param  Builder<Post>  $query
+     */
+    #[Scope]
+    protected function pendingReports(Builder $query): void
+    {
+        $query->whereHas('reports', fn (Builder $query) => $query->doesntHave('reviews'));
     }
 }

@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\ModerationAction;
 use App\Models\Scopes\NonHiddenPostCommentScope;
 use Database\Factories\PostCommentReactionFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -149,5 +151,34 @@ class PostComment extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(PostCommentSubscription::class);
+    }
+
+    /**
+     * Scope a query to comments whose latest moderation was applied by the system and is awaiting a moderator.
+     *
+     * @param  Builder<PostComment>  $query
+     */
+    #[Scope]
+    protected function pendingReview(Builder $query): void
+    {
+        $query->whereHas('moderations', function (Builder $query) {
+            $query->whereNull('user_id')
+                ->whereRaw('created_at = (
+                    SELECT MAX(created_at)
+                    FROM post_comment_moderations
+                    WHERE post_comment_moderations.post_comment_id = post_comments.id
+                )');
+        });
+    }
+
+    /**
+     * Scope a query to comments that have at least one report nobody has reviewed yet.
+     *
+     * @param  Builder<PostComment>  $query
+     */
+    #[Scope]
+    protected function pendingReports(Builder $query): void
+    {
+        $query->whereHas('reports', fn (Builder $query) => $query->doesntHave('reviews'));
     }
 }

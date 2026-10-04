@@ -58,14 +58,7 @@ class PostController extends Controller
 
         if ($request->has('pending_review')) {
             if ($request->boolean('pending_review')) {
-                $posts->whereHas('moderations', function ($query) {
-                    $query->whereNull('user_id')
-                        ->whereRaw('created_at = (
-                            SELECT MAX(created_at)
-                            FROM post_moderations
-                            WHERE post_moderations.post_id = posts.id
-                        )');
-                });
+                $posts->pendingReview();
             } else {
                 $posts->whereHas('moderations', function ($query) {
                     $query->whereNotNull('user_id')
@@ -86,9 +79,7 @@ class PostController extends Controller
 
         if ($request->has('pending_reports')) {
             if ($request->boolean('pending_reports')) {
-                $posts->whereHas('reports', function ($query) {
-                    $query->doesntHave('reviews');
-                })
+                $posts->pendingReports()
                     ->withCount('reports')
                     ->orderByDesc('reports_count');
             } else {
@@ -159,14 +150,7 @@ class PostController extends Controller
             $comments->withoutGlobalScope(NonHiddenPostCommentScope::class);
 
             if ($request->boolean('pending_review')) {
-                $comments->whereHas('moderations', function ($query) {
-                    $query->whereNull('user_id')
-                        ->whereRaw('created_at = (
-                            SELECT MAX(created_at)
-                            FROM post_comment_moderations
-                            WHERE post_comment_moderations.post_comment_id = post_comments.id
-                        )');
-                });
+                $comments->pendingReview();
             } else {
                 $comments->whereHas('moderations', function ($query) {
                     $query->whereNotNull('user_id')
@@ -195,9 +179,7 @@ class PostController extends Controller
             $comments->withoutGlobalScope(NonHiddenPostCommentScope::class);
 
             if ($request->boolean('pending_reports')) {
-                $comments->whereHas('reports', function ($query) {
-                    $query->doesntHave('reviews');
-                })
+                $comments->pendingReports()
                     ->withCount('reports')
                     ->orderByDesc('reports_count');
             } else {
