@@ -275,6 +275,7 @@ class PostController extends Controller
             'title' => ['required', 'string'],
             'location' => ['nullable', Rule::enum(PostLocation::class)],
             'body' => ['required', 'string'],
+            'is_official' => ['sometimes', 'boolean', Rule::prohibitedIf(! Auth::user()->isAdmin())],
             'hashtags' => ['nullable', 'list'],
             'hashtags.*' => [
                 'distinct',
@@ -296,7 +297,9 @@ class PostController extends Controller
             $pollData = Arr::pull($validated, 'poll');
 
             $post = Auth::user()->posts()
-                ->create($validated);
+                ->make($validated);
+            $post->is_official = $request->boolean('is_official');
+            $post->save();
 
             if ($pollData !== null) {
                 $poll = $post->polls()

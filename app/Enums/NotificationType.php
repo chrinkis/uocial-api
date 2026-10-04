@@ -10,6 +10,8 @@ enum NotificationType: string
     case NewCommentToPost = 'newCommentToPost';
     case NewCommentToPostComment = 'newCommentToPostComment';
 
+    case NewOfficialPost = 'newOfficialPost';
+
     case PostHiddenUntilReview = 'postHiddenUntilReview';
     case PostHiddenByModerator = 'postHiddenByModerator';
     case PostUnhiddenByModerator = 'postUnhiddenByModerator';
@@ -22,6 +24,7 @@ enum NotificationType: string
     {
         return match ($this) {
             self::NewCommentToPost,
+            self::NewOfficialPost,
             self::PostHiddenUntilReview,
             self::PostHiddenByModerator,
             self::PostUnhiddenByModerator => Post::class,

@@ -6,4 +6,5 @@ enum NotificationReason: string
 {
     case Owner = 'owner';
     case Follower = 'follower';
+    case Everyone = 'everyone';
 }
