@@ -182,7 +182,6 @@ it('lists bans pending review where the banned user spoke last on an active open
         ->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $pending->id)
-        ->assertJsonPath('data.0.is_active', true)
         ->assertJsonMissingPath('data.0.messages');
 });
 

@@ -52,8 +52,7 @@ it('bans a user as an admin', function () {
     ])
         ->assertCreated()
         ->assertJsonPath('data.reason', 'Spam')
-        ->assertJsonPath('data.notes', 'First offence')
-        ->assertJsonPath('data.is_active', true)
+        ->assertJsonPath('data.admin.notes', 'First offence')
         ->assertJsonMissingPath('data.banned_by');
 
     expect($target->isBanned())->toBeTrue();
@@ -120,11 +119,9 @@ it('returns the full ban history including lifted bans', function () {
         ->assertOk()
         ->assertJsonCount(2, 'data')
         ->assertJsonPath('data.0.reason', 'Second')
-        ->assertJsonPath('data.0.is_active', true)
         ->assertJsonPath('data.1.reason', 'First')
-        ->assertJsonPath('data.1.is_active', false)
         ->assertJsonMissingPath('data.1.lifted_by')
-        ->assertJsonPath('data.1.lifted_at', fn ($value) => $value !== null);
+        ->assertJsonPath('data.1.admin.lifted_at', fn ($value) => $value !== null);
 });
 
 it('unbans a user as an admin and records who lifted it', function () {

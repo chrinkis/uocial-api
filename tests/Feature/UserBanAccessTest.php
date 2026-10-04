@@ -52,7 +52,7 @@ function acceptLegalDocumentsForBanTest(User $user): void
     $user->acceptedTermsOfUses()->attach($termsOfUse->id);
 }
 
-it('lets a banned user log in and reports the active ban id', function () {
+it('lets a banned user log in and returns their active ban', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
     $ban = $user->ban('Spam', $admin);
@@ -64,10 +64,14 @@ it('lets a banned user log in and reports the active ban id', function () {
         'altcha' => altchaSolutionForTests(),
     ])
         ->assertOk()
-        ->assertJsonPath('active_ban_id', $ban->id);
+        ->assertJsonPath('active_ban.id', $ban->id)
+        ->assertJsonPath('active_ban.reason', 'Spam')
+        ->assertJsonMissingPath('active_ban.banned_by')
+        ->assertJsonMissingPath('active_ban.admin')
+        ->assertJsonMissingPath('active_ban.admin');
 });
 
-it('lets a user without a ban log in with no active ban id', function () {
+it('lets a user without a ban log in with no active ban', function () {
     $user = User::factory()->create();
 
     loginFromStatefulFrontend([
@@ -77,10 +81,10 @@ it('lets a user without a ban log in with no active ban id', function () {
         'altcha' => altchaSolutionForTests(),
     ])
         ->assertOk()
-        ->assertJsonPath('active_ban_id', null);
+        ->assertJsonPath('active_ban', null);
 });
 
-it('lets a banned user create a new token and reports the active ban id', function () {
+it('lets a banned user create a new token and returns their active ban', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
     $ban = $user->ban('Spam', $admin);
@@ -90,12 +94,16 @@ it('lets a banned user create a new token and reports the active ban id', functi
         'password' => 'password',
     ])
         ->assertOk()
-        ->assertJsonPath('active_ban_id', $ban->id);
+        ->assertJsonPath('active_ban.id', $ban->id)
+        ->assertJsonPath('active_ban.reason', 'Spam')
+        ->assertJsonMissingPath('active_ban.banned_by')
+        ->assertJsonMissingPath('active_ban.admin')
+        ->assertJsonMissingPath('active_ban.admin');
 
     expect($user->tokens()->count())->toBe(1);
 });
 
-it('lets a banned user with an existing token reach /api/user with the active ban id', function () {
+it('lets a banned user with an existing token reach /api/user with their active ban', function () {
     $user = User::factory()->create();
     $admin = User::factory()->admin()->create();
     $token = $user->createToken('device')->plainTextToken;
@@ -104,7 +112,9 @@ it('lets a banned user with an existing token reach /api/user with the active ba
     $this->withHeader('Authorization', 'Bearer '.$token)
         ->getJson('/api/user')
         ->assertOk()
-        ->assertJsonPath('data.active_ban_id', $ban->id);
+        ->assertJsonPath('data.active_ban.id', $ban->id)
+        ->assertJsonPath('data.active_ban.reason', 'Spam')
+        ->assertJsonMissingPath('data.active_ban.banned_by');
 });
 
 it('blocks a banned user with an existing token on normal app routes', function () {

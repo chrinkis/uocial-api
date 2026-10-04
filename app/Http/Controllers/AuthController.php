@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserBanResource;
 use App\Models\PrivacyPolicy;
 use App\Models\TermsOfUse;
 use App\Models\User;
@@ -54,7 +55,9 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Welcome, '.$user->name,
             'user' => $user,
-            'active_ban_id' => $user->activeBan()?->id,
+            'active_ban' => $user->activeBan()
+                ? new UserBanResource($user->activeBan())
+                : null,
         ]);
     }
 
@@ -81,6 +84,9 @@ class AuthController extends Controller
         $user = User::firstWhere('email', $validated['email']);
         assert($user !== null);
 
+        // The response includes the user's active ban, which needs the current user.
+        Auth::setUser($user);
+
         $tokenName = $validated['token_name'] ?? 'token'.now()->timestamp;
         assert(is_string($tokenName));
 
@@ -90,7 +96,9 @@ class AuthController extends Controller
             'message' => 'Welcome, '.$user->name,
             'user' => $user,
             'token' => $token,
-            'active_ban_id' => $user->activeBan()?->id,
+            'active_ban' => $user->activeBan()
+                ? new UserBanResource($user->activeBan())
+                : null,
         ]);
     }
 
