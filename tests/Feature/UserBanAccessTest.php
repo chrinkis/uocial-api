@@ -64,11 +64,10 @@ it('lets a banned user log in and returns their active ban', function () {
         'altcha' => altchaSolutionForTests(),
     ])
         ->assertOk()
-        ->assertJsonPath('active_ban.id', $ban->id)
-        ->assertJsonPath('active_ban.reason', 'Spam')
-        ->assertJsonMissingPath('active_ban.banned_by')
-        ->assertJsonMissingPath('active_ban.admin')
-        ->assertJsonMissingPath('active_ban.admin');
+        ->assertJsonPath('user.active_ban.id', $ban->id)
+        ->assertJsonPath('user.active_ban.reason', 'Spam')
+        ->assertJsonMissingPath('user.active_ban.banned_by')
+        ->assertJsonMissingPath('user.active_ban.admin');
 });
 
 it('lets a user without a ban log in with no active ban', function () {
@@ -81,7 +80,7 @@ it('lets a user without a ban log in with no active ban', function () {
         'altcha' => altchaSolutionForTests(),
     ])
         ->assertOk()
-        ->assertJsonPath('active_ban', null);
+        ->assertJsonPath('user.active_ban', null);
 });
 
 it('lets a banned user create a new token and returns their active ban', function () {
@@ -94,11 +93,11 @@ it('lets a banned user create a new token and returns their active ban', functio
         'password' => 'password',
     ])
         ->assertOk()
-        ->assertJsonPath('active_ban.id', $ban->id)
-        ->assertJsonPath('active_ban.reason', 'Spam')
-        ->assertJsonMissingPath('active_ban.banned_by')
-        ->assertJsonMissingPath('active_ban.admin')
-        ->assertJsonMissingPath('active_ban.admin');
+        ->assertJsonPath('user.active_ban.id', $ban->id)
+        ->assertJsonPath('user.active_ban.reason', 'Spam')
+        ->assertJsonMissingPath('user.active_ban.banned_by')
+        ->assertJsonMissingPath('user.active_ban.admin')
+        ->assertJsonMissingPath('user.active_ban.admin');
 
     expect($user->tokens()->count())->toBe(1);
 });

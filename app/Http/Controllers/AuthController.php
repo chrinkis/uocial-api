@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\UserBanResource;
+use App\Http\Resources\UserResource;
 use App\Models\PrivacyPolicy;
 use App\Models\TermsOfUse;
 use App\Models\User;
@@ -54,10 +54,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Welcome, '.$user->name,
-            'user' => $user,
-            'active_ban' => $user->activeBan()
-                ? new UserBanResource($user->activeBan())
-                : null,
+            'user' => new UserResource($user),
         ]);
     }
 
@@ -94,11 +91,8 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Welcome, '.$user->name,
-            'user' => $user,
+            'user' => new UserResource($user),
             'token' => $token,
-            'active_ban' => $user->activeBan()
-                ? new UserBanResource($user->activeBan())
-                : null,
         ]);
     }
 
@@ -163,7 +157,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Your account has been created',
-                'user' => $user,
+                'user' => new UserResource($user),
                 'token' => $token,
             ]);
         }
@@ -175,7 +169,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Your account has been created',
-            'user' => $user,
+            'user' => new UserResource($user),
         ]);
     }
 

@@ -18,14 +18,15 @@ class UserResource extends JsonResource
     {
         $latestPrivacyPolicy = PrivacyPolicy::latest('id')->first();
         $latestTermsOfUse = TermsOfUse::latest('id')->first();
+        $activeBan = $this->activeBan();
 
         return [
             'name' => $this->name,
             'email' => $this->email,
             'email_verified_at' => $this->email_verified_at,
             'role' => $this->role?->name,
-            'active_ban' => $this->activeBan()
-                ? new UserBanResource($this->activeBan())
+            'active_ban' => $activeBan
+                ? new UserBanResource($activeBan)
                 : null,
             'legal' => [
                 'privacy_policy' => [
