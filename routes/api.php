@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CatalogActivityController;
 use App\Http\Controllers\CatalogActivityRevertController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
@@ -109,6 +110,16 @@ Route::prefix('app')
             ->middleware('throttle:catalog-edits');
 
         Route::get('departments/{department}/activity', [DepartmentController::class, 'activity'])
+            ->withTrashed();
+
+        Route::apiResource('courses', CourseController::class)
+            ->only(['index', 'show']);
+
+        Route::apiResource('courses', CourseController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->middleware('throttle:catalog-edits');
+
+        Route::get('courses/{course}/activity', [CourseController::class, 'activity'])
             ->withTrashed();
 
         Route::get('notifications', [NotificationController::class, 'index']);
