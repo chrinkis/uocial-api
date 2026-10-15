@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Semester;
 use App\Models\Concerns\LogsCatalogActivity;
+use App\Models\Concerns\RevivesWhenRecreated;
 use Database\Factories\CourseOfferingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,7 @@ class CourseOffering extends Model
     use HasFactory;
 
     use LogsCatalogActivity;
+    use RevivesWhenRecreated;
 
     /**
      * The attributes that are mass assignable.
@@ -60,5 +62,13 @@ class CourseOffering extends Model
     {
         return $this->belongsToMany(Professor::class)
             ->withTimestamps();
+    }
+
+    /**
+     * @return list<list<string>>
+     */
+    protected static function uniqueKeys(): array
+    {
+        return [['course_id', 'semester', 'year']];
     }
 }

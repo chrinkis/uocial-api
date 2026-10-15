@@ -6,6 +6,7 @@ use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CatalogActivityController;
 use App\Http\Controllers\CatalogActivityRevertController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseOfferingController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
@@ -121,6 +122,16 @@ Route::prefix('app')
             ->middleware('throttle:catalog-edits');
 
         Route::get('courses/{course}/activity', [CourseController::class, 'activity'])
+            ->withTrashed();
+
+        Route::apiResource('course-offerings', CourseOfferingController::class)
+            ->only(['index', 'show']);
+
+        Route::apiResource('course-offerings', CourseOfferingController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->middleware('throttle:catalog-edits');
+
+        Route::get('course-offerings/{course_offering}/activity', [CourseOfferingController::class, 'activity'])
             ->withTrashed();
 
         Route::apiResource('professors', ProfessorController::class)
