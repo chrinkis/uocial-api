@@ -75,6 +75,21 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()->id.':ban:'.$banId);
         });
 
+        RateLimiter::for('academic-reports', function (Request $request) {
+            assert($request->user() !== null);
+
+            $entity = collect($request->route()?->parameters() ?? [])
+                ->last();
+            $entityId = is_object($entity) ? $entity->getKey() : $entity;
+
+            return [
+                Limit::perMinutes(10, 3)
+                    ->by($request->user()->id.':academic-report:'.$request->path().':'.$entityId),
+                Limit::perDay(20)
+                    ->by($request->user()->id.':academic-reports'),
+            ];
+        });
+
         RateLimiter::for('login', function (Request $request) {
             $email = $request->input('email', '');
             assert(is_string($email));

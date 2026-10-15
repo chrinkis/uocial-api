@@ -5,7 +5,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseOfferingController;
+use App\Http\Controllers\CourseOfferingReportController;
+use App\Http\Controllers\CourseReportController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DepartmentReportController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
@@ -19,6 +22,7 @@ use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessorController;
+use App\Http\Controllers\ProfessorReportController;
 use App\Http\Controllers\TermsOfUseController;
 use App\Http\Controllers\UserBanController;
 use App\Http\Controllers\UserBanMessageController;
@@ -200,6 +204,68 @@ Route::prefix('app')
             ->scoped()
             ->only(['store', 'update', 'destroy'])
             ->middleware(UserIsModerator::class);
+
+        Route::get('departments/{department}/reports', [DepartmentReportController::class, 'index'])
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/reports/{report}/resolution', [DepartmentReportController::class, 'resolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::delete('departments/{department}/reports/{report}/resolution', [DepartmentReportController::class, 'unresolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/reports', [DepartmentReportController::class, 'store'])
+            ->middleware('throttle:academic-reports');
+
+        Route::get('departments/{department}/courses/{course}/reports', [CourseReportController::class, 'index'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/courses/{course}/reports/{report}/resolution', [CourseReportController::class, 'resolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::delete('departments/{department}/courses/{course}/reports/{report}/resolution', [CourseReportController::class, 'unresolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/courses/{course}/reports', [CourseReportController::class, 'store'])
+            ->scopeBindings()
+            ->middleware('throttle:academic-reports');
+
+        Route::get('departments/{department}/professors/{professor}/reports', [ProfessorReportController::class, 'index'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/professors/{professor}/reports/{report}/resolution', [ProfessorReportController::class, 'resolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::delete('departments/{department}/professors/{professor}/reports/{report}/resolution', [ProfessorReportController::class, 'unresolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/professors/{professor}/reports', [ProfessorReportController::class, 'store'])
+            ->scopeBindings()
+            ->middleware('throttle:academic-reports');
+
+        Route::get('departments/{department}/courses/{course}/offerings/{offering}/reports', [CourseOfferingReportController::class, 'index'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/courses/{course}/offerings/{offering}/reports/{report}/resolution', [CourseOfferingReportController::class, 'resolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::delete('departments/{department}/courses/{course}/offerings/{offering}/reports/{report}/resolution', [CourseOfferingReportController::class, 'unresolve'])
+            ->scopeBindings()
+            ->middleware(UserIsModerator::class);
+
+        Route::post('departments/{department}/courses/{course}/offerings/{offering}/reports', [CourseOfferingReportController::class, 'store'])
+            ->scopeBindings()
+            ->middleware('throttle:academic-reports');
 
         Route::apiResource('users.bans', UserBanController::class)
             ->only(['index', 'store'])

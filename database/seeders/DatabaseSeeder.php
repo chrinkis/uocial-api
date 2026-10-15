@@ -30,6 +30,10 @@ class DatabaseSeeder extends Seeder
             ProfessorSeeder::class,
             CourseOfferingSeeder::class,
             CourseOfferingReviewSeeder::class,
+            DepartmentReportSeeder::class,
+            CourseReportSeeder::class,
+            ProfessorReportSeeder::class,
+            CourseOfferingReportSeeder::class,
         ]);
     }
 }

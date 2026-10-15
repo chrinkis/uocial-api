@@ -45,4 +45,14 @@ class Department extends Model
         return $this->belongsToMany(Professor::class)
             ->withTimestamps();
     }
+
+    /**
+     * Get the reports of the department.
+     *
+     * @return HasMany<DepartmentReport,$this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(DepartmentReport::class);
+    }
 }

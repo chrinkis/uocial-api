@@ -182,6 +182,46 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The department reports that user has created.
+     *
+     * @return HasMany<DepartmentReport,$this>
+     */
+    public function departmentReports(): HasMany
+    {
+        return $this->hasMany(DepartmentReport::class);
+    }
+
+    /**
+     * The course reports that user has created.
+     *
+     * @return HasMany<CourseReport,$this>
+     */
+    public function courseReports(): HasMany
+    {
+        return $this->hasMany(CourseReport::class);
+    }
+
+    /**
+     * The professor reports that user has created.
+     *
+     * @return HasMany<ProfessorReport,$this>
+     */
+    public function professorReports(): HasMany
+    {
+        return $this->hasMany(ProfessorReport::class);
+    }
+
+    /**
+     * The courseOffering reports that user has created.
+     *
+     * @return HasMany<CourseOfferingReport,$this>
+     */
+    public function courseOfferingReports(): HasMany
+    {
+        return $this->hasMany(CourseOfferingReport::class);
+    }
+
+    /**
      * The post comment reports that user has created.
      *
      * @return HasMany<PostCommentReport,$this>
