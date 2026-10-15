@@ -47,11 +47,11 @@ class CourseController extends Controller
     }
 
     /**
-     * Store a newly created course.
+     * Store a newly created course, or bring back the deleted one it matches.
      */
     public function store(Request $request): JsonResponse
     {
-        $course = Course::create($this->validated($request));
+        $course = Course::createOrRevive($this->validated($request));
 
         return (new CourseResource($course->load('department')))
             ->response()
@@ -92,7 +92,8 @@ class CourseController extends Controller
     }
 
     /**
-     * A code is unique within its department, among deleted courses too since they can be restored.
+     * A code is unique within its department. Creating may reuse a deleted course's code (it brings
+     * that course back), but an update may not, since it cannot restore anything.
      *
      * @return array<string, mixed>
      */
@@ -112,7 +113,7 @@ class CourseController extends Controller
             }
 
             $taken = Course::query()
-                ->withTrashed()
+                ->when($course, fn ($query) => $query->withTrashed())
                 ->where('department_id', $request->input('department_id', $course?->department_id))
                 ->where('code', $request->input('code', $course?->code))
                 ->when($course, fn ($query) => $query->whereKeyNot($course))

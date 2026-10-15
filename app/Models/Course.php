@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsCatalogActivity;
+use App\Models\Concerns\RevivesWhenRecreated;
 use Database\Factories\CourseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class Course extends Model
     use HasFactory;
 
     use LogsCatalogActivity;
+    use RevivesWhenRecreated;
 
     /**
      * The attributes that are mass assignable.
@@ -45,5 +47,13 @@ class Course extends Model
     public function offerings(): HasMany
     {
         return $this->hasMany(CourseOffering::class);
+    }
+
+    /**
+     * @return list<list<string>>
+     */
+    protected static function uniqueKeys(): array
+    {
+        return [['department_id', 'code']];
     }
 }

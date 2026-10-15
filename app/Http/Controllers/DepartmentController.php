@@ -37,11 +37,11 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Store a newly created department.
+     * Store a newly created department, or bring back the deleted one it matches.
      */
     public function store(Request $request): JsonResponse
     {
-        $department = Department::create($request->validate($this->rules()));
+        $department = Department::createOrRevive($request->validate($this->rules()));
 
         return (new DepartmentResource($department))
             ->response()
@@ -82,7 +82,8 @@ class DepartmentController extends Controller
     }
 
     /**
-     * The codes are unique among deleted departments too, since they can be restored.
+     * Creating may reuse a deleted department's values (it brings that department back), but an
+     * update may not, since it cannot restore anything.
      *
      * @return array<string, list<mixed>>
      */
@@ -90,10 +91,14 @@ class DepartmentController extends Controller
     {
         $presence = $department ? 'sometimes' : 'required';
 
+        $unique = fn () => Rule::unique(Department::class)
+            ->ignore($department)
+            ->when($department === null, fn ($rule) => $rule->whereNull('deleted_at'));
+
         return [
-            'code' => [$presence, 'string', 'max:255', Rule::unique(Department::class)->ignore($department)],
+            'code' => [$presence, 'string', 'max:255', $unique()],
             'name' => [$presence, 'string', 'max:255'],
-            'course_prefix' => [$presence, 'string', 'max:255', Rule::unique(Department::class)->ignore($department)],
+            'course_prefix' => [$presence, 'string', 'max:255', $unique()],
         ];
     }
 }

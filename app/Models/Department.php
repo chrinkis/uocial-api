@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsCatalogActivity;
+use App\Models\Concerns\RevivesWhenRecreated;
 use Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class Department extends Model
     use HasFactory;
 
     use LogsCatalogActivity;
+    use RevivesWhenRecreated;
 
     /**
      * The attributes that are mass assignable.
@@ -46,5 +48,13 @@ class Department extends Model
     {
         return $this->belongsToMany(Professor::class)
             ->withTimestamps();
+    }
+
+    /**
+     * @return list<list<string>>
+     */
+    protected static function uniqueKeys(): array
+    {
+        return [['code'], ['course_prefix']];
     }
 }

@@ -65,20 +65,16 @@ it('validates required fields and the department', function () {
     }
 });
 
-it('keeps codes unique per department, deleted courses included', function () {
+it('keeps codes unique per department', function () {
     $department = Department::factory()->create();
     $course = Course::factory()->for($department)->create(['code' => '101']);
-    $deleted = Course::factory()->for($department)->create(['code' => '102']);
-    $deleted->delete();
 
-    foreach (['101', '102'] as $code) {
-        $this->postJson('/api/app/courses', [
-            'department_id' => $department->id,
-            'code' => $code,
-            'name' => 'Duplicate',
-        ])->assertUnprocessable()
-            ->assertJsonValidationErrors('code');
-    }
+    $this->postJson('/api/app/courses', [
+        'department_id' => $department->id,
+        'code' => '101',
+        'name' => 'Duplicate',
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('code');
 
     // The same code is fine in another department.
     $this->postJson('/api/app/courses', [
@@ -89,6 +85,34 @@ it('keeps codes unique per department, deleted courses included', function () {
 
     // Keeping its own code is fine.
     $this->patchJson("/api/app/courses/{$course->id}", ['code' => '101'])->assertOk();
+});
+
+it('brings back a deleted course when it is created again', function () {
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create(['code' => '101', 'name' => 'Old name']);
+    $course->delete();
+
+    $this->postJson('/api/app/courses', [
+        'department_id' => $department->id,
+        'code' => '101',
+        'name' => 'New name',
+    ])->assertCreated()
+        ->assertJsonPath('data.id', $course->id)
+        ->assertJsonPath('data.name', 'New name');
+
+    expect(Course::withTrashed()->count())->toBe(1)
+        ->and(Activity::latest('id')->limit(2)->pluck('event')->all())->toBe(['updated', 'restored']);
+});
+
+it('does not let an update reuse the code of a deleted course', function () {
+    $department = Department::factory()->create();
+    $deleted = Course::factory()->for($department)->create(['code' => '102']);
+    $deleted->delete();
+    $course = Course::factory()->for($department)->create(['code' => '101']);
+
+    $this->patchJson("/api/app/courses/{$course->id}", ['code' => '102'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('code');
 });
 
 it('checks uniqueness against the new department when only the department changes', function () {
