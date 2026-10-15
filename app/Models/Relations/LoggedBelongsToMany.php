@@ -21,6 +21,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class LoggedBelongsToMany extends BelongsToMany
 {
     /**
+     * Whether a `sync` is running, which logs its whole result once instead of per call.
+     */
+    private bool $syncing = false;
+
+    /**
      * Attach the given ids and log them.
      *
      * A duplicate attach throws before anything is logged.
@@ -28,6 +33,10 @@ class LoggedBelongsToMany extends BelongsToMany
     public function attach($ids, array $attributes = [], $touch = true)
     {
         parent::attach($ids, $attributes, $touch);
+
+        if ($this->syncing) {
+            return;
+        }
 
         $this->logChange('attached', $this->parseIds($ids));
     }
@@ -37,6 +46,10 @@ class LoggedBelongsToMany extends BelongsToMany
      */
     public function detach($ids = null, $touch = true)
     {
+        if ($this->syncing) {
+            return parent::detach($ids, $touch);
+        }
+
         $attached = array_map(intval(...), $this->allRelatedIds()->all());
 
         $detached = $ids === null
@@ -48,6 +61,28 @@ class LoggedBelongsToMany extends BelongsToMany
         $this->logChange('detached', $detached);
 
         return $result;
+    }
+
+    /**
+     * Sync the given ids and log everything attached and everything detached once each.
+     *
+     * Laravel attaches new records one by one inside `sync`, which would log one entry per id.
+     * `syncWithoutDetaching` goes through here too.
+     */
+    public function sync($ids, $detaching = true)
+    {
+        $this->syncing = true;
+
+        try {
+            $changes = parent::sync($ids, $detaching);
+        } finally {
+            $this->syncing = false;
+        }
+
+        $this->logChange('attached', $changes['attached']);
+        $this->logChange('detached', $changes['detached']);
+
+        return $changes;
     }
 
     /**
