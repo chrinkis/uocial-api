@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             CourseSeeder::class,
             ProfessorSeeder::class,
             CourseOfferingSeeder::class,
+            CourseOfferingReviewSeeder::class,
         ]);
     }
 }
