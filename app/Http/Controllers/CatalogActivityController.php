@@ -18,7 +18,7 @@ class CatalogActivityController extends Controller
             ->inLog(ActivityLogs::CATALOG)
             ->with('causer')
             ->latest('id')
-            ->paginate(20);
+            ->paginate(16);
 
         return CatalogActivityResource::collection($activities)
             ->response();

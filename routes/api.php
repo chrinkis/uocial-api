@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CatalogActivityController;
 use App\Http\Controllers\CatalogActivityRevertController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
@@ -99,6 +100,16 @@ Route::prefix('app')
 
         Route::post('catalog/activity/{activity}/revert', [CatalogActivityRevertController::class, 'store'])
             ->middleware(UserIsModerator::class);
+
+        Route::apiResource('departments', DepartmentController::class)
+            ->only(['index', 'show']);
+
+        Route::apiResource('departments', DepartmentController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->middleware('throttle:catalog-edits');
+
+        Route::get('departments/{department}/activity', [DepartmentController::class, 'activity'])
+            ->withTrashed();
 
         Route::get('notifications', [NotificationController::class, 'index']);
 

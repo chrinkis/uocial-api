@@ -65,6 +65,13 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()->id);
         });
 
+        RateLimiter::for('catalog-edits', function (Request $request) {
+            assert($request->user() !== null);
+
+            return Limit::perMinutes(5, 25)
+                ->by($request->user()->id);
+        });
+
         RateLimiter::for('ban-messages', function (Request $request) {
             assert($request->user() !== null);
 
