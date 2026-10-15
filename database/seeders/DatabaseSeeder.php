@@ -25,6 +25,10 @@ class DatabaseSeeder extends Seeder
             TermsOfUseAcceptanceSeeder::class,
             UserBanSeeder::class,
             UserBanMessageSeeder::class,
+            DepartmentSeeder::class,
+            CourseSeeder::class,
+            ProfessorSeeder::class,
+            CourseOfferingSeeder::class,
         ]);
     }
 }

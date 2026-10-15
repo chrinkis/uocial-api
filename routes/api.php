@@ -3,6 +3,8 @@
 use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
+use App\Http\Controllers\CatalogActivityController;
+use App\Http\Controllers\CatalogActivityRevertController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
@@ -91,6 +93,11 @@ Route::prefix('app')
         Route::get('posts/saved', [PostController::class, 'saved']);
 
         Route::get('moderation-counts', [ModerationCountsController::class, 'show'])
+            ->middleware(UserIsModerator::class);
+
+        Route::get('catalog/activity', [CatalogActivityController::class, 'index']);
+
+        Route::post('catalog/activity/{activity}/revert', [CatalogActivityRevertController::class, 'store'])
             ->middleware(UserIsModerator::class);
 
         Route::get('notifications', [NotificationController::class, 'index']);
