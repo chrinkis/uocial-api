@@ -6,6 +6,7 @@ use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseOfferingController;
 use App\Http\Controllers\CourseOfferingReportController;
+use App\Http\Controllers\CourseOfferingReviewController;
 use App\Http\Controllers\CourseReportController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DepartmentReportController;
@@ -204,6 +205,9 @@ Route::prefix('app')
             ->scoped()
             ->only(['store', 'update', 'destroy'])
             ->middleware(UserIsModerator::class);
+
+        Route::apiResource('departments.courses.offerings.reviews', CourseOfferingReviewController::class)
+            ->scoped();
 
         Route::get('departments/{department}/reports', [DepartmentReportController::class, 'index'])
             ->middleware(UserIsModerator::class);
