@@ -3,6 +3,9 @@
 use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseOfferingController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
@@ -15,6 +18,7 @@ use App\Http\Controllers\PostPollController;
 use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
 use App\Http\Controllers\PrivacyPolicyController;
+use App\Http\Controllers\ProfessorController;
 use App\Http\Controllers\TermsOfUseController;
 use App\Http\Controllers\UserBanController;
 use App\Http\Controllers\UserBanMessageController;
@@ -161,6 +165,40 @@ Route::prefix('app')
 
         Route::apiResource('posts.comments.moderations', PostCommentModerationController::class)
             ->only(['store'])
+            ->middleware(UserIsModerator::class);
+
+        Route::apiResource('departments', DepartmentController::class)
+            ->only(['index', 'show']);
+
+        Route::apiResource('departments', DepartmentController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->middleware(UserIsModerator::class);
+
+        Route::apiResource('departments.courses', CourseController::class)
+            ->scoped()
+            ->only(['index', 'show']);
+
+        Route::apiResource('departments.courses', CourseController::class)
+            ->scoped()
+            ->only(['store', 'update', 'destroy'])
+            ->middleware(UserIsModerator::class);
+
+        Route::apiResource('departments.courses.offerings', CourseOfferingController::class)
+            ->scoped()
+            ->only(['index', 'show']);
+
+        Route::apiResource('departments.courses.offerings', CourseOfferingController::class)
+            ->scoped()
+            ->only(['store', 'update', 'destroy'])
+            ->middleware(UserIsModerator::class);
+
+        Route::apiResource('departments.professors', ProfessorController::class)
+            ->scoped()
+            ->only(['index', 'show']);
+
+        Route::apiResource('departments.professors', ProfessorController::class)
+            ->scoped()
+            ->only(['store', 'update', 'destroy'])
             ->middleware(UserIsModerator::class);
 
         Route::apiResource('users.bans', UserBanController::class)
