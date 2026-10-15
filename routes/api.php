@@ -19,6 +19,7 @@ use App\Http\Controllers\PostPollController;
 use App\Http\Controllers\PostReportController;
 use App\Http\Controllers\PostReportReviewController;
 use App\Http\Controllers\PrivacyPolicyController;
+use App\Http\Controllers\ProfessorController;
 use App\Http\Controllers\TermsOfUseController;
 use App\Http\Controllers\UserBanController;
 use App\Http\Controllers\UserBanMessageController;
@@ -120,6 +121,16 @@ Route::prefix('app')
             ->middleware('throttle:catalog-edits');
 
         Route::get('courses/{course}/activity', [CourseController::class, 'activity'])
+            ->withTrashed();
+
+        Route::apiResource('professors', ProfessorController::class)
+            ->only(['index', 'show']);
+
+        Route::apiResource('professors', ProfessorController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->middleware('throttle:catalog-edits');
+
+        Route::get('professors/{professor}/activity', [ProfessorController::class, 'activity'])
             ->withTrashed();
 
         Route::get('notifications', [NotificationController::class, 'index']);

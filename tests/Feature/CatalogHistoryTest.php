@@ -70,6 +70,19 @@ it('logs attach, detach and sync through the normal relation methods', function 
     expect(lastActivity()->properties['ids'])->toBe([$c]);
 });
 
+it('logs a sync as one attached and one detached entry however many ids it changes', function () {
+    $professor = Professor::factory()->create();
+    [$a, $b, $c, $d] = Department::factory()->count(4)->create()->pluck('id')->all();
+    $professor->departments()->attach($a);
+    $before = Activity::count();
+
+    $professor->departments()->sync([$b, $c, $d]);
+
+    expect(Activity::count() - $before)->toBe(2)
+        ->and(Activity::where('event', 'attached')->latest('id')->first()->properties['ids'])->toBe([$b, $c, $d])
+        ->and(Activity::where('event', 'detached')->latest('id')->first()->properties['ids'])->toBe([$a]);
+});
+
 it('logs a pivot change on the model it was made from', function () {
     $professor = Professor::factory()->create();
     $department = Department::factory()->create();
