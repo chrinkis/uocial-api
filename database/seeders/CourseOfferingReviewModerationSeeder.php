@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Events\CourseOfferingReviewModerated;
 use App\Models\CourseOfferingReview;
 use App\Models\CourseOfferingReviewModeration;
 use App\Models\User;
@@ -29,12 +30,16 @@ class CourseOfferingReviewModerationSeeder extends Seeder
                     ->user($moderator)
                     ->create();
 
+                CourseOfferingReviewModerated::dispatch($review);
+
                 if (fake()->boolean(30)) {
                     CourseOfferingReviewModeration::factory()
                         ->review($review)
                         ->user($moderator)
                         ->unhide()
                         ->create();
+
+                    CourseOfferingReviewModerated::dispatch($review);
                 }
             });
     }

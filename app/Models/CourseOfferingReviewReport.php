@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\CourseOfferingReviewReportFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CourseOfferingReviewReport extends Model
 {
+    /** @use HasFactory<CourseOfferingReviewReportFactory> */
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *

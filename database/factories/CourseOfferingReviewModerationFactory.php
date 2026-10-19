@@ -49,6 +49,17 @@ class CourseOfferingReviewModerationFactory extends Factory
     }
 
     /**
+     * Marks the action as applied by the system, pending a moderator's review.
+     */
+    public function system(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_id' => null,
+            'comment' => 'Pending review by a moderator',
+        ]);
+    }
+
+    /**
      * Marks the action as unhide.
      */
     public function unhide(): static
