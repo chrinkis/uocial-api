@@ -75,6 +75,13 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()->id.':ban:'.$banId);
         });
 
+        RateLimiter::for('review-reports', function (Request $request) {
+            assert($request->user() !== null);
+
+            return Limit::perMinutes(5, 15)
+                ->by($request->user()->id.':review-report');
+        });
+
         RateLimiter::for('academic-reports', function (Request $request) {
             assert($request->user() !== null);
 

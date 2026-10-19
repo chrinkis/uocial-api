@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\ModerationAction;
 use App\Models\Scopes\NonHiddenCourseOfferingReviewScope;
 use Database\Factories\CourseOfferingReviewFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -80,11 +82,61 @@ class CourseOfferingReview extends Model
         return $this->hasMany(CourseOfferingReviewModeration::class);
     }
 
+    /**
+     * Get the reports of the review.
+     *
+     * @return HasMany<CourseOfferingReviewReport,$this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(CourseOfferingReviewReport::class);
+    }
+
     public function isHidden(): bool
     {
         return $this->moderations()
             ->latest('id')
             ->first()
             ?->action === ModerationAction::Hide;
+    }
+
+    public function autoHide(): void
+    {
+        $this->moderations()
+            ->create([
+                'comment' => 'Pending review by a moderator',
+                'action' => ModerationAction::Hide,
+            ]);
+    }
+
+    public function isCurrentlyModeratedBySystem(): bool
+    {
+        $latestModeration = $this->moderations()
+            ->latest('id')
+            ->first();
+
+        if (! $latestModeration) {
+            return false;
+        }
+
+        return $latestModeration->user_id === null;
+    }
+
+    /**
+     * Scope a query to reviews whose latest moderation was applied by the system and is awaiting a moderator.
+     *
+     * @param  Builder<CourseOfferingReview>  $query
+     */
+    #[Scope]
+    protected function pendingReview(Builder $query): void
+    {
+        $query->whereHas('moderations', function (Builder $query) {
+            $query->whereNull('user_id')
+                ->whereRaw('id = (
+                    SELECT MAX(id)
+                    FROM course_offering_review_moderations
+                    WHERE course_offering_review_moderations.course_offering_review_id = course_offering_reviews.id
+                )');
+        });
     }
 }

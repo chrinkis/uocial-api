@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CourseOfferingReview;
 use App\Models\Post;
 use App\Models\PostComment;
+use App\Models\Scopes\NonHiddenCourseOfferingReviewScope;
 use App\Models\Scopes\NonHiddenPostCommentScope;
 use App\Models\Scopes\NonHiddenPostScope;
 use App\Models\UserBan;
@@ -24,6 +26,9 @@ class ModerationCountsController extends Controller
                 ->pendingReview()
                 ->count(),
             'post_comments_pending_review' => PostComment::withoutGlobalScope(NonHiddenPostCommentScope::class)
+                ->pendingReview()
+                ->count(),
+            'course_offering_reviews_pending_review' => CourseOfferingReview::withoutGlobalScope(NonHiddenCourseOfferingReviewScope::class)
                 ->pendingReview()
                 ->count(),
             'posts_pending_reports' => Post::withoutGlobalScope(NonHiddenPostScope::class)

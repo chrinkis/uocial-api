@@ -232,6 +232,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The course offering review reports that user has created.
+     *
+     * @return HasMany<CourseOfferingReviewReport,$this>
+     */
+    public function courseOfferingReviewReports(): HasMany
+    {
+        return $this->hasMany(CourseOfferingReviewReport::class);
+    }
+
+    /**
      * The post comment reports that user has created.
      *
      * @return HasMany<PostCommentReport,$this>

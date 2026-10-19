@@ -45,6 +45,7 @@ it('returns the moderation counts without ban threads to moderators', function (
         ->assertExactJson([
             'posts_pending_review' => 0,
             'post_comments_pending_review' => 0,
+            'course_offering_reviews_pending_review' => 0,
             'posts_pending_reports' => 0,
             'post_comments_pending_reports' => 0,
         ]);
@@ -56,7 +57,7 @@ it('returns the ban threads pending reply to admins', function () {
     $this->getJson('/api/app/moderation-counts')
         ->assertOk()
         ->assertJsonPath('ban_threads_pending_reply', 0)
-        ->assertJsonCount(5);
+        ->assertJsonCount(6);
 });
 
 it('counts posts hidden by the system until a moderator decides', function () {

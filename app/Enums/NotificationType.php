@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Models\CourseOfferingReview;
 use App\Models\Post;
 use App\Models\PostComment;
 
@@ -20,6 +21,10 @@ enum NotificationType: string
     case PostCommentHiddenByModerator = 'postCommentHiddenByModerator';
     case PostCommentUnhiddenByModerator = 'postCommentUnhiddenByModerator';
 
+    case CourseOfferingReviewHiddenUntilReview = 'courseOfferingReviewHiddenUntilReview';
+    case CourseOfferingReviewHiddenByModerator = 'courseOfferingReviewHiddenByModerator';
+    case CourseOfferingReviewUnhiddenByModerator = 'courseOfferingReviewUnhiddenByModerator';
+
     public function entityClass(): string
     {
         return match ($this) {
@@ -32,6 +37,9 @@ enum NotificationType: string
             self::PostCommentHiddenUntilReview,
             self::PostCommentHiddenByModerator,
             self::PostCommentUnhiddenByModerator => PostComment::class,
+            self::CourseOfferingReviewHiddenUntilReview,
+            self::CourseOfferingReviewHiddenByModerator,
+            self::CourseOfferingReviewUnhiddenByModerator => CourseOfferingReview::class,
         };
     }
 }

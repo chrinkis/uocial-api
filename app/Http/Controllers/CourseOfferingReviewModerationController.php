@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ModerationAction;
+use App\Events\CourseOfferingReviewModerated;
 use App\Models\Course;
 use App\Models\CourseOffering;
 use App\Models\Department;
@@ -37,6 +38,8 @@ class CourseOfferingReviewModerationController extends Controller
 
         $moderation->user()->associate(Auth::user());
         $moderation->save();
+
+        CourseOfferingReviewModerated::dispatch($review);
 
         return response()->json([
             'message' => 'Action was applied',
