@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseOfferingController;
 use App\Http\Controllers\CourseOfferingReportController;
 use App\Http\Controllers\CourseOfferingReviewController;
+use App\Http\Controllers\CourseOfferingReviewModerationController;
 use App\Http\Controllers\CourseReportController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DepartmentReportController;
@@ -208,6 +209,11 @@ Route::prefix('app')
 
         Route::apiResource('departments.courses.offerings.reviews', CourseOfferingReviewController::class)
             ->scoped();
+
+        Route::apiResource('departments.courses.offerings.reviews.moderations', CourseOfferingReviewModerationController::class)
+            ->scoped()
+            ->only(['store'])
+            ->middleware(UserIsModerator::class);
 
         Route::get('departments/{department}/reports', [DepartmentReportController::class, 'index'])
             ->middleware(UserIsModerator::class);

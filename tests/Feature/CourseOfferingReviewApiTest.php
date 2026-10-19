@@ -3,6 +3,7 @@
 use App\Models\Course;
 use App\Models\CourseOffering;
 use App\Models\CourseOfferingReview;
+use App\Models\CourseOfferingReviewModeration;
 use App\Models\Department;
 use App\Models\PrivacyPolicy;
 use App\Models\TermsOfUse;
@@ -17,8 +18,8 @@ function signInForReviews(User $user): void
     $privacyPolicy = PrivacyPolicy::latest('id')->first() ?? PrivacyPolicy::factory()->create();
     $termsOfUse = TermsOfUse::latest('id')->first() ?? TermsOfUse::factory()->create();
 
-    $user->acceptedPrivacyPolicies()->attach($privacyPolicy->id);
-    $user->acceptedTermsOfUses()->attach($termsOfUse->id);
+    $user->acceptedPrivacyPolicies()->syncWithoutDetaching($privacyPolicy->id);
+    $user->acceptedTermsOfUses()->syncWithoutDetaching($termsOfUse->id);
 
     Sanctum::actingAs($user);
 }
@@ -100,4 +101,56 @@ it('restores a deleted review when the user reviews again', function () {
 
 it('requires authentication', function () {
     $this->getJson($this->base)->assertUnauthorized();
+});
+
+it('hides moderated reviews from users but not from moderators', function () {
+    $moderator = User::factory()->moderator()->create();
+    $review = CourseOfferingReview::factory()->courseOffering($this->offering)->create();
+    CourseOfferingReviewModeration::factory()->review($review)->user($moderator)->create();
+
+    signInForReviews(User::factory()->create());
+
+    $this->getJson($this->base)->assertOk()->assertJsonCount(0, 'data');
+    $this->getJson("{$this->base}/{$review->id}")->assertNotFound();
+
+    signInForReviews($moderator);
+
+    $this->getJson($this->base)->assertOk()->assertJsonCount(0, 'data');
+    $this->getJson("{$this->base}?moderator_mode=1")->assertOk()->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.moderation.is_hidden', true);
+    $this->getJson("{$this->base}/{$review->id}")->assertOk();
+});
+
+it('lets only moderators hide and unhide a review', function () {
+    $review = CourseOfferingReview::factory()->courseOffering($this->offering)->create();
+    $url = "{$this->base}/{$review->id}/moderations";
+
+    signInForReviews($user = User::factory()->create());
+    $this->postJson($url, ['comment' => 'Spam', 'action' => 'hide'])->assertForbidden();
+
+    signInForReviews($moderator = User::factory()->moderator()->create());
+    $this->postJson($url)->assertUnprocessable();
+    $this->postJson($url, ['comment' => 'Spam', 'action' => 'hide'])->assertOk();
+
+    expect($review->isHidden())->toBeTrue();
+    expect($review->moderations()->first()->user_id)->toBe($moderator->id);
+
+    signInForReviews($user);
+    $this->getJson("{$this->base}/{$review->id}")->assertNotFound();
+
+    signInForReviews($moderator);
+    $this->postJson($url, ['comment' => 'Fine', 'action' => 'unhide'])->assertOk();
+
+    signInForReviews($user);
+    $this->getJson("{$this->base}/{$review->id}")->assertOk();
+});
+
+it('does not let a user bypass a hidden review by posting again', function () {
+    $user = User::factory()->create();
+    $review = CourseOfferingReview::factory()->courseOffering($this->offering)->user($user)->create();
+    CourseOfferingReviewModeration::factory()->review($review)->create();
+
+    signInForReviews($user);
+
+    $this->postJson($this->base, ['rating' => 5])->assertConflict();
 });

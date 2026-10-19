@@ -123,6 +123,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The course offering review moderations that user has applied.
+     *
+     * @return HasMany<CourseOfferingReviewModeration,$this>
+     */
+    public function courseOfferingReviewModerations(): HasMany
+    {
+        return $this->hasMany(CourseOfferingReviewModeration::class);
+    }
+
+    /**
      * The poll votes of the user.
      *
      * @return HasMany<PostPollVote,User>

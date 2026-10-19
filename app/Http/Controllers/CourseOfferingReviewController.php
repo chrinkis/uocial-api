@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\CourseOffering;
 use App\Models\CourseOfferingReview;
 use App\Models\Department;
+use App\Models\Scopes\NonHiddenCourseOfferingReviewScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,10 +16,15 @@ class CourseOfferingReviewController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * params:
+     *   - moderator_mode?: boolean
      */
-    public function index(Department $department, Course $course, CourseOffering $offering): JsonResponse
+    public function index(Request $request, Department $department, Course $course, CourseOffering $offering): JsonResponse
     {
         $reviews = $offering->reviews()
+            ->when(Auth::user()->isModerator() && $request->boolean('moderator_mode'),
+                fn ($query) => $query->withoutGlobalScope(NonHiddenCourseOfferingReviewScope::class))
             ->orderByDesc('id')
             ->paginate(8);
 
@@ -47,6 +53,7 @@ class CourseOfferingReviewController extends Controller
 
         $review = $offering->reviews()
             ->withTrashed()
+            ->withoutGlobalScope(NonHiddenCourseOfferingReviewScope::class)
             ->whereBelongsTo(Auth::user())
             ->first();
 
@@ -76,8 +83,13 @@ class CourseOfferingReviewController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Department $department, Course $course, CourseOffering $offering, CourseOfferingReview $review): JsonResponse
+    public function show(Department $department, Course $course, CourseOffering $offering, string $review): JsonResponse
     {
+        $review = $offering->reviews()
+            ->when(Auth::user()->isModerator(),
+                fn ($query) => $query->withoutGlobalScope(NonHiddenCourseOfferingReviewScope::class))
+            ->findOrFail($review);
+
         return (new CourseOfferingReviewResource($review))
             ->response();
     }

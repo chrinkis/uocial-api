@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Enums\ModerationAction;
+use App\Models\Scopes\NonHiddenCourseOfferingReviewScope;
 use Database\Factories\CourseOfferingReviewFactory;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ScopedBy([NonHiddenCourseOfferingReviewScope::class])]
 class CourseOfferingReview extends Model
 {
     /** @use HasFactory<CourseOfferingReviewFactory> */
@@ -63,5 +68,23 @@ class CourseOfferingReview extends Model
     public function courseOffering(): BelongsTo
     {
         return $this->belongsTo(CourseOffering::class);
+    }
+
+    /**
+     * Get the moderations for the review.
+     *
+     * @return HasMany<CourseOfferingReviewModeration,$this>
+     */
+    public function moderations(): HasMany
+    {
+        return $this->hasMany(CourseOfferingReviewModeration::class);
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->moderations()
+            ->latest('id')
+            ->first()
+            ?->action === ModerationAction::Hide;
     }
 }

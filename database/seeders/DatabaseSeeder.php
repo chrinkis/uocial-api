@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ProfessorSeeder::class,
             CourseOfferingSeeder::class,
             CourseOfferingReviewSeeder::class,
+            CourseOfferingReviewModerationSeeder::class,
             DepartmentReportSeeder::class,
             CourseReportSeeder::class,
             ProfessorReportSeeder::class,

@@ -26,6 +26,9 @@ class CourseOfferingReviewResource extends JsonResource
             'lecture_presence_helpfulness' => $this->lecture_presence_helpfulness,
             'comment' => $this->comment,
             'is_own' => $this->user_id === Auth::id(),
+            'moderation' => $this->when(Auth::user()->isModerator(), [
+                'is_hidden' => $this->isHidden(),
+            ]),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
