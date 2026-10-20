@@ -3,6 +3,7 @@
 use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
@@ -88,6 +89,9 @@ Route::prefix('app')
 Route::prefix('app')
     ->middleware(['auth:sanctum', UserIsNotBanned::class, 'verified', UserHasAcceptedLegalDocuments::class])
     ->group(function () {
+        Route::apiResource('departments', DepartmentController::class)
+            ->only(['index', 'show']);
+
         Route::get('posts/saved', [PostController::class, 'saved']);
 
         Route::get('moderation-counts', [ModerationCountsController::class, 'show'])
