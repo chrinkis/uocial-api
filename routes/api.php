@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostCommentController;
@@ -96,6 +97,11 @@ Route::prefix('app')
         Route::apiResource('departments.courses', CourseController::class)
             ->only(['index', 'show'])
             ->scoped();
+
+        Route::get('departments/{department}/instructors', [InstructorController::class, 'forDepartment']);
+
+        Route::get('departments/{department}/courses/{course}/instructors', [InstructorController::class, 'forCourse'])
+            ->scopeBindings();
 
         Route::get('posts/saved', [PostController::class, 'saved']);
 
