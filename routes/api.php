@@ -3,6 +3,7 @@
 use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
@@ -91,6 +92,10 @@ Route::prefix('app')
     ->group(function () {
         Route::apiResource('departments', DepartmentController::class)
             ->only(['index', 'show']);
+
+        Route::apiResource('departments.courses', CourseController::class)
+            ->only(['index', 'show'])
+            ->scoped();
 
         Route::get('posts/saved', [PostController::class, 'saved']);
 
