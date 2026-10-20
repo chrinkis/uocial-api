@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @property int $year Academic start year (e.g. 2025 for the 2025–26 academic year).
+ */
 class CourseOffering extends Model
 {
     /** @use HasFactory<CourseOfferingFactory> */

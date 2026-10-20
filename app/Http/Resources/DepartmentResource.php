@@ -18,6 +18,8 @@ class DepartmentResource extends JsonResource
             'id' => $this->id,
             'code' => $this->code,
             'name' => $this->name,
+            'courses_count' => $this->whenHas('courses_count', fn () => (int) $this->courses_count),
+            'instructors_count' => $this->whenHas('instructors_count', fn () => (int) $this->instructors_count),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

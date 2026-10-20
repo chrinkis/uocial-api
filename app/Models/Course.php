@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Course extends Model
 {
@@ -41,5 +42,18 @@ class Course extends Model
     public function offerings(): HasMany
     {
         return $this->hasMany(CourseOffering::class);
+    }
+
+    /**
+     * The latest offering of the course.
+     *
+     * @return HasOne<CourseOffering, $this>
+     */
+    public function latestOffering(): HasOne
+    {
+        return $this->hasOne(CourseOffering::class)->latestOfMany([
+            'year',
+            'semester',
+        ]);
     }
 }
