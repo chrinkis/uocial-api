@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(Instructor::class)->constrained();
             $table->timestamps();
 
-            $table->unique(['course_offering_id', 'instructor_id']);
+            $table->unique(['course_offering_id', 'instructor_id'], 'course_offering_instructor_unique');
         });
     }
 
