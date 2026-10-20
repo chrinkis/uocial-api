@@ -2,8 +2,8 @@
 
 namespace App\Enums;
 
-enum Semester
+enum Semester: string
 {
-    case Fall;
-    case Spring;
+    case Fall = 'fall';
+    case Spring = 'spring';
 }
