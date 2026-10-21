@@ -4,6 +4,7 @@ use App\Http\Controllers\AltchaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseOfferingController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\ModerationCountsController;
@@ -95,6 +96,10 @@ Route::prefix('app')
             ->only(['index', 'show']);
 
         Route::apiResource('departments.courses', CourseController::class)
+            ->only(['index', 'show'])
+            ->scoped();
+
+        Route::apiResource('departments.courses.offerings', CourseOfferingController::class)
             ->only(['index', 'show'])
             ->scoped();
 
