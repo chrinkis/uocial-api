@@ -78,3 +78,25 @@ it('filters the counts of a single department without hiding it', function () {
     $this->getJson("/api/app/departments/{$department->id}?instructors[]=999999")
         ->assertUnprocessable();
 });
+
+it('searches the departments by code or name', function () {
+    $match = Department::factory()->create(['code' => 'CSD', 'name' => 'Computer Science']);
+    Department::factory()->create(['code' => 'MATH', 'name' => 'Mathematics']);
+
+    $this->getJson('/api/app/departments?search=computer+sci')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $match->id);
+
+    $this->getJson('/api/app/departments?search=csd')
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+
+    $this->getJson('/api/app/departments?search=%25')
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+
+    $this->getJson('/api/app/departments?search=')
+        ->assertOk()
+        ->assertJsonCount(2, 'data');
+});

@@ -17,12 +17,13 @@ class CourseController extends Controller
      * Display a listing of the department's courses.
      *
      * params:
+     * - search: only courses whose code or name contain every whitespace-separated term
      * - instructors[]: only courses with an offering taught by at least one of these instructor ids;
      *   the counts only take those offerings into account
      */
     public function index(Request $request, Department $department): JsonResponse
     {
-        $courses = $this->courses($this->instructorFilter($request))
+        $courses = $this->applySearch($this->courses($this->instructorFilter($request)), $request, ['code', 'name'])
             ->whereBelongsTo($department)
             ->orderBy('code')
             ->paginate(16);

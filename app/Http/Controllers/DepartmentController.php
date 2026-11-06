@@ -15,12 +15,13 @@ class DepartmentController extends Controller
      * Display a listing of the departments.
      *
      * params:
+     * - search: only departments whose code or name contain every whitespace-separated term
      * - instructors[]: only departments with a course offering taught by at least one of these
      *   instructor ids; the counts only take those offerings into account
      */
     public function index(Request $request): JsonResponse
     {
-        $departments = $this->departments($this->instructorFilter($request))
+        $departments = $this->applySearch($this->departments($this->instructorFilter($request)), $request, ['code', 'name'])
             ->orderBy('name')
             ->paginate(16);
 

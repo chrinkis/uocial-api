@@ -82,3 +82,23 @@ it('filters the counts of a single course without hiding it', function () {
         ->assertOk()
         ->assertJsonPath('data.offerings_count', 2);
 });
+
+it('searches the courses of a department by code or name', function () {
+    $department = Department::factory()->create();
+    $match = Course::factory()->for($department)->create(['code' => 'CS-101', 'name' => 'Intro to Programming']);
+    Course::factory()->for($department)->create(['code' => 'CS-202', 'name' => 'Algorithms']);
+    Course::factory()->create(['code' => 'CS-103', 'name' => 'Intro to Programming']);
+
+    $this->getJson("/api/app/departments/{$department->id}/courses?search=intro+program")
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $match->id);
+
+    $this->getJson("/api/app/departments/{$department->id}/courses?search=cs-")
+        ->assertOk()
+        ->assertJsonCount(2, 'data');
+
+    $this->getJson("/api/app/departments/{$department->id}/courses?search=%25")
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+});

@@ -16,13 +16,14 @@ class CourseOfferingController extends Controller
      * Display a listing of the course's offerings.
      *
      * params:
+     * - search: only offerings whose year or semester contain every whitespace-separated term
      * - instructors[]: only offerings taught by at least one of these instructor ids
      */
     public function index(Request $request, Department $department, Course $course): JsonResponse
     {
         $instructorIds = $this->instructorFilter($request);
 
-        $offerings = $course->offerings()
+        $offerings = $this->applySearch($course->offerings()->getQuery(), $request, ['year', 'semester'])
             ->when($instructorIds !== [], fn ($query) => $query
                 ->whereHas('instructors', fn (Builder $query) => $query->whereIn('instructors.id', $instructorIds)))
             ->with('instructors')

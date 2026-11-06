@@ -119,3 +119,26 @@ it('rejects unknown instructor ids on the offerings', function () {
         ->assertUnprocessable()
         ->assertJsonValidationErrorFor('instructors.0');
 });
+
+it('searches the offerings of the course by year or semester', function () {
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create();
+
+    $match = CourseOffering::factory()->for($course)->create(['year' => 2024, 'semester' => Semester::Fall]);
+    CourseOffering::factory()->for($course)->create(['year' => 2025, 'semester' => Semester::Fall]);
+    CourseOffering::factory()->for($course)->create(['year' => 2025, 'semester' => Semester::Spring]);
+    CourseOffering::factory()->create(['year' => 2024, 'semester' => Semester::Fall]);
+
+    $this->getJson(courseOfferingUrl($department, $course).'?search=2024+fall')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $match->id);
+
+    $this->getJson(courseOfferingUrl($department, $course).'?search=2025')
+        ->assertOk()
+        ->assertJsonCount(2, 'data');
+
+    $this->getJson(courseOfferingUrl($department, $course).'?search=spring')
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+});

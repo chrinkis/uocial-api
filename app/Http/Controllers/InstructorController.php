@@ -22,7 +22,7 @@ class InstructorController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $instructors = $this->search(Instructor::query(), $request)
+        $instructors = $this->applySearch(Instructor::query(), $request, ['first_name', 'middle_name', 'last_name'])
             ->whereHas('courseOfferings')
             ->orderBy('last_name')
             ->orderBy('first_name')
@@ -49,7 +49,7 @@ class InstructorController extends Controller
      */
     public function forDepartment(Request $request, Department $department): JsonResponse
     {
-        $instructors = $this->search(Instructor::query(), $request)
+        $instructors = $this->applySearch(Instructor::query(), $request, ['first_name', 'middle_name', 'last_name'])
             ->whereHas('courseOfferings.course', fn (Builder $query) => $query
                 ->whereBelongsTo($department))
             ->addSelect([
@@ -76,7 +76,7 @@ class InstructorController extends Controller
      */
     public function forCourse(Request $request, Department $department, Course $course): JsonResponse
     {
-        $instructors = $this->search(Instructor::query(), $request)
+        $instructors = $this->applySearch(Instructor::query(), $request, ['first_name', 'middle_name', 'last_name'])
             ->whereHas('courseOfferings', fn (Builder $query) => $query
                 ->whereBelongsTo($course))
             ->addSelect([
@@ -91,32 +91,6 @@ class InstructorController extends Controller
 
         return InstructorResource::collection($instructors)
             ->response();
-    }
-
-    /**
-     * Restrict the instructors to the ones matching the `search` param.
-     *
-     * @param  Builder<Instructor>  $query
-     * @return Builder<Instructor>
-     */
-    private function search(Builder $query, Request $request): Builder
-    {
-        $validated = $request->validate([
-            'search' => ['sometimes', 'nullable', 'string', 'max:100'],
-        ]);
-
-        $terms = preg_split('/\s+/', trim($validated['search'] ?? ''), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-
-        foreach ($terms as $term) {
-            $like = '%'.addcslashes($term, '\\%_').'%';
-
-            $query->where(fn (Builder $query) => $query
-                ->where('first_name', 'like', $like)
-                ->orWhere('middle_name', 'like', $like)
-                ->orWhere('last_name', 'like', $like));
-        }
-
-        return $query;
     }
 
     /**
