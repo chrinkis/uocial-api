@@ -9,10 +9,44 @@ use App\Models\Instructor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class InstructorController extends Controller
 {
+    /**
+     * Display all the instructors.
+     *
+     * params:
+     * - search: only instructors whose names contain every whitespace-separated term
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'search' => ['sometimes', 'nullable', 'string', 'max:100'],
+        ]);
+
+        $terms = preg_split('/\s+/', trim($validated['search'] ?? ''), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        $instructors = Instructor::query()
+            ->where(function (Builder $query) use ($terms) {
+                foreach ($terms as $term) {
+                    $like = '%'.addcslashes($term, '\\%_').'%';
+
+                    $query->where(fn (Builder $query) => $query
+                        ->where('first_name', 'like', $like)
+                        ->orWhere('middle_name', 'like', $like)
+                        ->orWhere('last_name', 'like', $like));
+                }
+            })
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->paginate(16);
+
+        return InstructorResource::collection($instructors)
+            ->response();
+    }
+
     /**
      * Display the instructor.
      */

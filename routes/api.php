@@ -103,6 +103,8 @@ Route::prefix('app')
             ->only(['index', 'show'])
             ->scoped();
 
+        Route::get('instructors', [InstructorController::class, 'index']);
+
         Route::get('instructors/{instructor}', [InstructorController::class, 'show']);
 
         Route::get('departments/{department}/instructors', [InstructorController::class, 'forDepartment']);
