@@ -1,12 +1,33 @@
 <?php
 
 use App\Http\Middleware\UserHasAcceptedLegalDocuments;
+use App\Models\Course;
+use App\Models\CourseOffering;
+use App\Models\Department;
 use App\Models\Instructor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
+
+/**
+ * Create an instructor with an offering of the given (or a new) course.
+ *
+ * @param  array<string, mixed>  $attributes
+ */
+function teacher(array $attributes = [], ?Course $course = null): Instructor
+{
+    $instructor = Instructor::factory()->create($attributes);
+
+    CourseOffering::factory()
+        ->for($course ?? Course::factory()->create())
+        ->create()
+        ->instructors()
+        ->attach($instructor);
+
+    return $instructor;
+}
 
 beforeEach(function () {
     $this->withoutMiddleware(UserHasAcceptedLegalDocuments::class);
@@ -38,12 +59,12 @@ it('requires authentication to show an instructor', function () {
         ->assertUnauthorized();
 });
 
-it('lists all instructors ordered by name', function () {
+it('lists the instructors ordered by name', function () {
     Sanctum::actingAs(User::factory()->create());
 
-    Instructor::factory()->create(['first_name' => 'Zoe', 'last_name' => 'Brown']);
-    Instructor::factory()->create(['first_name' => 'Ann', 'last_name' => 'Brown']);
-    Instructor::factory()->create(['first_name' => 'Bob', 'last_name' => 'Adams']);
+    teacher(['first_name' => 'Zoe', 'last_name' => 'Brown']);
+    teacher(['first_name' => 'Ann', 'last_name' => 'Brown']);
+    teacher(['first_name' => 'Bob', 'last_name' => 'Adams']);
 
     $this->getJson('/api/app/instructors')
         ->assertOk()
@@ -56,7 +77,9 @@ it('lists all instructors ordered by name', function () {
 it('paginates the instructors list', function () {
     Sanctum::actingAs(User::factory()->create());
 
-    Instructor::factory()->count(20)->create();
+    foreach (range(1, 20) as $_) {
+        teacher();
+    }
 
     $this->getJson('/api/app/instructors')
         ->assertOk()
@@ -72,9 +95,9 @@ it('requires authentication to list instructors', function () {
 it('searches the instructors by any name part', function () {
     Sanctum::actingAs(User::factory()->create());
 
-    $match = Instructor::factory()->create(['first_name' => 'Maria', 'middle_name' => 'Eleni', 'last_name' => 'Papadaki']);
-    Instructor::factory()->create(['first_name' => 'Nikos', 'middle_name' => null, 'last_name' => 'Papadakis']);
-    Instructor::factory()->create(['first_name' => 'Zoe', 'middle_name' => null, 'last_name' => 'Brown']);
+    $match = teacher(['first_name' => 'Maria', 'middle_name' => 'Eleni', 'last_name' => 'Papadaki']);
+    teacher(['first_name' => 'Nikos', 'middle_name' => null, 'last_name' => 'Papadakis']);
+    teacher(['first_name' => 'Zoe', 'middle_name' => null, 'last_name' => 'Brown']);
 
     $this->getJson('/api/app/instructors?search=papadak')
         ->assertOk()
@@ -97,7 +120,8 @@ it('searches the instructors by any name part', function () {
 it('treats like wildcards in the search literally', function () {
     Sanctum::actingAs(User::factory()->create());
 
-    Instructor::factory()->count(2)->create();
+    teacher();
+    teacher();
 
     $this->getJson('/api/app/instructors?search=%25')
         ->assertOk()
@@ -107,9 +131,70 @@ it('treats like wildcards in the search literally', function () {
 it('ignores an empty search', function () {
     Sanctum::actingAs(User::factory()->create());
 
-    Instructor::factory()->count(2)->create();
+    teacher();
+    teacher();
 
     $this->getJson('/api/app/instructors?search=')
         ->assertOk()
         ->assertJsonCount(2, 'data');
+});
+
+it('lists only the instructors teaching an offering', function () {
+    Sanctum::actingAs(User::factory()->create());
+
+    $teaching = teacher();
+    Instructor::factory()->create();
+
+    $this->getJson('/api/app/instructors')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $teaching->id);
+});
+
+it('searches the instructors of a department', function () {
+    Sanctum::actingAs(User::factory()->create());
+
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create();
+
+    $inside = teacher(['first_name' => 'Maria', 'last_name' => 'Papadaki'], $course);
+    teacher(['first_name' => 'Maria', 'last_name' => 'Papadopoulou']);
+    teacher(['first_name' => 'Zoe', 'last_name' => 'Brown'], $course);
+
+    $this->getJson("/api/app/departments/{$department->id}/instructors?search=maria")
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $inside->id);
+
+    $this->getJson("/api/app/departments/{$department->id}/instructors?search=maria+brown")
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+
+    $this->getJson("/api/app/departments/{$department->id}/instructors?search=%25")
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+
+    $this->getJson("/api/app/departments/{$department->id}/instructors?search=")
+        ->assertOk()
+        ->assertJsonCount(2, 'data');
+});
+
+it('searches the instructors of a course', function () {
+    Sanctum::actingAs(User::factory()->create());
+
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create();
+    $otherCourse = Course::factory()->for($department)->create();
+
+    $inside = teacher(['first_name' => 'Maria', 'last_name' => 'Papadaki'], $course);
+    teacher(['first_name' => 'Maria', 'last_name' => 'Papadopoulou'], $otherCourse);
+
+    $this->getJson("/api/app/departments/{$department->id}/courses/{$course->id}/instructors?search=maria")
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $inside->id);
+
+    $this->getJson("/api/app/departments/{$department->id}/courses/{$course->id}/instructors?search=nobody")
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
 });
