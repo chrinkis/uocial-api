@@ -77,3 +77,45 @@ it('does not list offerings of a course that belongs to another department', fun
     $this->getJson(courseOfferingUrl($department, $otherCourse))
         ->assertNotFound();
 });
+
+it('filters the offerings by any of the given instructors', function () {
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create();
+    [$alice, $bob, $carol] = Instructor::factory()->count(3)->create();
+
+    $aliceOffering = CourseOffering::factory()->for($course)->create();
+    $bothOffering = CourseOffering::factory()->for($course)->create();
+    $carolOffering = CourseOffering::factory()->for($course)->create();
+    $aliceOffering->instructors()->attach($alice);
+    $bothOffering->instructors()->attach([$alice->id, $bob->id]);
+    $carolOffering->instructors()->attach($carol);
+
+    $this->getJson(courseOfferingUrl($department, $course).'?'.http_build_query(['instructors' => [$alice->id, $bob->id]]))
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonFragment(['id' => $aliceOffering->id])
+        ->assertJsonFragment(['id' => $bothOffering->id]);
+
+    $this->getJson(courseOfferingUrl($department, $course))
+        ->assertJsonCount(3, 'data');
+});
+
+it('rejects an invalid instructors filter on the offerings', function (mixed $value) {
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create();
+
+    $this->getJson(courseOfferingUrl($department, $course).'?'.http_build_query(['instructors' => $value]))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrorFor('instructors');
+})->with([
+    'not an array' => 'abc',
+]);
+
+it('rejects unknown instructor ids on the offerings', function () {
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create();
+
+    $this->getJson(courseOfferingUrl($department, $course).'?instructors[]=999999')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrorFor('instructors.0');
+});

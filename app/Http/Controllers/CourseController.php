@@ -8,16 +8,21 @@ use App\Models\Course;
 use App\Models\Department;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 {
     /**
      * Display a listing of the department's courses.
+     *
+     * params:
+     * - instructors[]: only courses with an offering taught by at least one of these instructor ids;
+     *   the counts only take those offerings into account
      */
-    public function index(Department $department): JsonResponse
+    public function index(Request $request, Department $department): JsonResponse
     {
-        $courses = $this->courses()
+        $courses = $this->courses($this->instructorFilter($request))
             ->whereBelongsTo($department)
             ->orderBy('code')
             ->paginate(16);
@@ -42,23 +47,34 @@ class CourseController extends Controller
     /**
      * Base query with the course metadata.
      *
+     * @param  list<int>  $instructorIds  restrict the courses (and counts) to offerings taught by any of these
      * @return Builder<Course>
      */
-    private function courses(): Builder
+    private function courses(array $instructorIds = []): Builder
     {
+        $taughtBy = fn (Builder $query) => $query
+            ->when($instructorIds !== [], fn (Builder $query) => $query
+                ->whereHas('instructors', fn (Builder $query) => $query->whereIn('instructors.id', $instructorIds)));
+
         return Course::query()
+            ->when($instructorIds !== [], fn (Builder $query) => $query
+                ->whereHas('offerings', $taughtBy))
             ->withCount([
-                'offerings',
-                'offerings as fall_offerings_count' => fn (Builder $query) => $query
+                'offerings' => $taughtBy,
+                'offerings as fall_offerings_count' => fn (Builder $query) => $taughtBy($query)
                     ->where('semester', Semester::Fall->value),
-                'offerings as spring_offerings_count' => fn (Builder $query) => $query
+                'offerings as spring_offerings_count' => fn (Builder $query) => $taughtBy($query)
                     ->where('semester', Semester::Spring->value),
             ])
             ->addSelect([
                 'instructors_count' => DB::table('course_offering_instructor')
                     ->join('course_offerings', 'course_offerings.id', '=', 'course_offering_instructor.course_offering_id')
                     ->selectRaw('count(distinct course_offering_instructor.instructor_id)')
-                    ->whereColumn('course_offerings.course_id', 'courses.id'),
+                    ->whereColumn('course_offerings.course_id', 'courses.id')
+                    ->when($instructorIds !== [], fn ($query) => $query
+                        ->whereIn('course_offering_instructor.course_offering_id', DB::table('course_offering_instructor as matching')
+                            ->select('matching.course_offering_id')
+                            ->whereIn('matching.instructor_id', $instructorIds))),
             ]);
     }
 }

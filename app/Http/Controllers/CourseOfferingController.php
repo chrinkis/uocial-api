@@ -6,16 +6,25 @@ use App\Http\Resources\CourseOfferingResource;
 use App\Models\Course;
 use App\Models\CourseOffering;
 use App\Models\Department;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CourseOfferingController extends Controller
 {
     /**
      * Display a listing of the course's offerings.
+     *
+     * params:
+     * - instructors[]: only offerings taught by at least one of these instructor ids
      */
-    public function index(Department $department, Course $course): JsonResponse
+    public function index(Request $request, Department $department, Course $course): JsonResponse
     {
+        $instructorIds = $this->instructorFilter($request);
+
         $offerings = $course->offerings()
+            ->when($instructorIds !== [], fn ($query) => $query
+                ->whereHas('instructors', fn (Builder $query) => $query->whereIn('instructors.id', $instructorIds)))
             ->with('instructors')
             ->orderByDesc('year')
             ->orderByDesc('semester')
