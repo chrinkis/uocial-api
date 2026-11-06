@@ -33,10 +33,13 @@ class CourseController extends Controller
 
     /**
      * Display the course.
+     *
+     * params:
+     * - instructors[]: only count the offerings taught by at least one of these instructor ids
      */
-    public function show(Department $department, Course $course): JsonResponse
+    public function show(Request $request, Department $department, Course $course): JsonResponse
     {
-        $course = $this->courses()
+        $course = $this->courses($this->instructorFilter($request), restrict: false)
             ->with('latestOffering.instructors')
             ->findOrFail($course->getKey());
 
@@ -47,17 +50,18 @@ class CourseController extends Controller
     /**
      * Base query with the course metadata.
      *
-     * @param  list<int>  $instructorIds  restrict the courses (and counts) to offerings taught by any of these
+     * @param  list<int>  $instructorIds  restrict the counts (and, when `$restrict`, the courses) to offerings taught by any of these
+     * @param  bool  $restrict  whether to exclude the courses without matching offerings
      * @return Builder<Course>
      */
-    private function courses(array $instructorIds = []): Builder
+    private function courses(array $instructorIds = [], bool $restrict = true): Builder
     {
         $taughtBy = fn (Builder $query) => $query
             ->when($instructorIds !== [], fn (Builder $query) => $query
                 ->whereHas('instructors', fn (Builder $query) => $query->whereIn('instructors.id', $instructorIds)));
 
         return Course::query()
-            ->when($instructorIds !== [], fn (Builder $query) => $query
+            ->when($restrict && $instructorIds !== [], fn (Builder $query) => $query
                 ->whereHas('offerings', $taughtBy))
             ->withCount([
                 'offerings' => $taughtBy,

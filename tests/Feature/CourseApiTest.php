@@ -55,3 +55,30 @@ it('rejects unknown instructor ids on the courses', function () {
     $this->getJson("/api/app/departments/{$department->id}/courses?instructors[]=999999")
         ->assertUnprocessable();
 });
+
+it('filters the counts of a single course without hiding it', function () {
+    [$alice, $bob] = Instructor::factory()->count(2)->create();
+
+    $department = Department::factory()->create();
+    $course = Course::factory()->for($department)->create();
+
+    CourseOffering::factory()->for($course)->create(['semester' => Semester::Fall])->instructors()->attach($alice);
+    CourseOffering::factory()->for($course)->create(['semester' => Semester::Spring])->instructors()->attach($bob);
+
+    $this->getJson("/api/app/departments/{$department->id}/courses/{$course->id}?".http_build_query(['instructors' => [$alice->id]]))
+        ->assertOk()
+        ->assertJsonPath('data.offerings_count', 1)
+        ->assertJsonPath('data.offerings_by_semester.fall', 1)
+        ->assertJsonPath('data.offerings_by_semester.spring', 0)
+        ->assertJsonPath('data.instructors_count', 1);
+
+    $nobody = Instructor::factory()->create();
+
+    $this->getJson("/api/app/departments/{$department->id}/courses/{$course->id}?".http_build_query(['instructors' => [$nobody->id]]))
+        ->assertOk()
+        ->assertJsonPath('data.offerings_count', 0);
+
+    $this->getJson("/api/app/departments/{$department->id}/courses/{$course->id}")
+        ->assertOk()
+        ->assertJsonPath('data.offerings_count', 2);
+});

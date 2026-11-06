@@ -30,10 +30,13 @@ class DepartmentController extends Controller
 
     /**
      * Display the department.
+     *
+     * params:
+     * - instructors[]: only count the offerings taught by at least one of these instructor ids
      */
-    public function show(Department $department): JsonResponse
+    public function show(Request $request, Department $department): JsonResponse
     {
-        $department = $this->departments()
+        $department = $this->departments($this->instructorFilter($request), restrict: false)
             ->findOrFail($department->getKey());
 
         return (new DepartmentResource($department))
@@ -43,16 +46,17 @@ class DepartmentController extends Controller
     /**
      * Base query with the department metadata.
      *
-     * @param  list<int>  $instructorIds  restrict the departments (and counts) to offerings taught by any of these
+     * @param  list<int>  $instructorIds  restrict the counts (and, when `$restrict`, the departments) to offerings taught by any of these
+     * @param  bool  $restrict  whether to exclude the departments without matching offerings
      * @return Builder<Department>
      */
-    private function departments(array $instructorIds = []): Builder
+    private function departments(array $instructorIds = [], bool $restrict = true): Builder
     {
         $hasMatchingOfferings = fn (Builder $query) => $query
             ->whereHas('offerings.instructors', fn (Builder $query) => $query->whereIn('instructors.id', $instructorIds));
 
         return Department::query()
-            ->when($instructorIds !== [], fn (Builder $query) => $query
+            ->when($restrict && $instructorIds !== [], fn (Builder $query) => $query
                 ->whereHas('courses', $hasMatchingOfferings))
             ->withCount([
                 'courses' => fn (Builder $query) => $query
