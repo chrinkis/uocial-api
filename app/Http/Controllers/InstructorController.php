@@ -14,6 +14,15 @@ use Illuminate\Support\Facades\DB;
 class InstructorController extends Controller
 {
     /**
+     * Display the instructor.
+     */
+    public function show(Instructor $instructor): JsonResponse
+    {
+        return (new InstructorResource($instructor))
+            ->response();
+    }
+
+    /**
      * Display the instructors teaching the department's courses.
      */
     public function forDepartment(Department $department): JsonResponse
