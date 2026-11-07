@@ -1,0 +1,21 @@
+meta {
+  name: reports (admin)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{api}}/app/admin/reports/departments?resolved=0
+  body: none
+  auth: inherit
+}
+
+params:query {
+  resolved: 0
+  ~reason: missing
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

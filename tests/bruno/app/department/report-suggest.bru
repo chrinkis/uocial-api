@@ -1,0 +1,21 @@
+meta {
+  name: suggest new
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{api}}/app/departments/reports
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  reason: missing
+  comment: Department of Geology is missing
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

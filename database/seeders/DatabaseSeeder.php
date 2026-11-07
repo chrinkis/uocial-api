@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             TermsOfUseAcceptanceSeeder::class,
             UserBanSeeder::class,
             UserBanMessageSeeder::class,
+            DepartmentReportSeeder::class,
         ]);
     }
 }

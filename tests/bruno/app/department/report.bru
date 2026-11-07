@@ -1,0 +1,21 @@
+meta {
+  name: report
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{api}}/app/departments/1/reports
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  reason: false_data
+  comment: Test
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -6,6 +6,7 @@ use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseOfferingController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DepartmentReportController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\ModerationCountsController;
 use App\Http\Controllers\NotificationController;
@@ -94,6 +95,20 @@ Route::prefix('app')
     ->group(function () {
         Route::apiResource('departments', DepartmentController::class)
             ->only(['index', 'show']);
+
+        Route::post('departments/reports', [DepartmentReportController::class, 'suggest'])
+            ->middleware('throttle:department-reports');
+
+        Route::post('departments/{department}/reports', [DepartmentReportController::class, 'store'])
+            ->middleware('throttle:department-reports');
+
+        Route::get('reports/departments', [DepartmentReportController::class, 'mine']);
+
+        Route::get('admin/reports/departments', [DepartmentReportController::class, 'index'])
+            ->middleware(UserIsAdmin::class);
+
+        Route::post('admin/reports/departments/{departmentReport}/resolve', [DepartmentReportController::class, 'resolve'])
+            ->middleware(UserIsAdmin::class);
 
         Route::apiResource('departments.courses', CourseController::class)
             ->only(['index', 'show'])

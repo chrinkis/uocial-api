@@ -31,4 +31,14 @@ class Department extends Model
     {
         return $this->hasMany(Course::class);
     }
+
+    /**
+     * The reports made about the department.
+     *
+     * @return HasMany<DepartmentReport, $this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(DepartmentReport::class);
+    }
 }

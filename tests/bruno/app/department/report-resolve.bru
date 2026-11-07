@@ -1,0 +1,20 @@
+meta {
+  name: resolve report (admin)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{api}}/app/admin/reports/departments/1/resolve
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  comment: Fixed
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

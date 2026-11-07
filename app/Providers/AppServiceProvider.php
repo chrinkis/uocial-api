@@ -75,6 +75,21 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()->id.':ban:'.$banId);
         });
 
+        RateLimiter::for('department-reports', function (Request $request) {
+            assert($request->user() !== null);
+
+            $department = $request->route('department');
+            // The route binding may not have run yet, so the parameter can still be the raw id.
+            $departmentId = is_object($department) ? $department->getKey() : ($department ?? 'new');
+
+            return [
+                Limit::perHour(3)
+                    ->by($request->user()->id.':department-report:'.$departmentId),
+                Limit::perHour(30)
+                    ->by($request->user()->id.':department-reports'),
+            ];
+        });
+
         RateLimiter::for('login', function (Request $request) {
             $email = $request->input('email', '');
             assert(is_string($email));
