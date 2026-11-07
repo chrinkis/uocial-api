@@ -11,6 +11,7 @@ use App\Models\CourseOfferingReport;
 use App\Models\Department;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -63,12 +64,7 @@ class CourseOfferingReportController extends Controller
      */
     public function store(StoreCourseOfferingReportRequest $request, Department $department, Course $course, CourseOffering $offering): JsonResponse
     {
-        $report = Auth::user()->courseOfferingReports()->create([
-            ...$request->validated(),
-            'course_offering_id' => $offering->id,
-        ]);
-
-        return $this->created($report);
+        return $this->created($this->build($request, offering: $offering));
     }
 
     /**
@@ -76,12 +72,7 @@ class CourseOfferingReportController extends Controller
      */
     public function suggest(StoreCourseOfferingReportRequest $request, Department $department, Course $course): JsonResponse
     {
-        $report = Auth::user()->courseOfferingReports()->create([
-            ...$request->validated(),
-            'course_id' => $course->id,
-        ]);
-
-        return $this->created($report);
+        return $this->created($this->build($request, course: $course));
     }
 
     /**
@@ -111,6 +102,36 @@ class CourseOfferingReportController extends Controller
 
         return (new CourseOfferingReportResource($courseOfferingReport))
             ->response();
+    }
+
+    /**
+     * Create the report of the authenticated user, linking the records through the relations.
+     *
+     * @param  CourseOffering|null  $offering  the reported offering
+     * @param  Course|null  $course  the course a suggested new offering belongs to
+     */
+    private function build(StoreCourseOfferingReportRequest $request, ?CourseOffering $offering = null, ?Course $course = null): CourseOfferingReport
+    {
+        $validated = $request->validated();
+
+        $report = Auth::user()->courseOfferingReports()
+            ->make(Arr::only($validated, ['reason', 'comment']));
+
+        if ($offering !== null) {
+            $report->courseOffering()->associate($offering);
+        }
+
+        if ($course !== null) {
+            $report->course()->associate($course);
+        }
+
+        if (isset($validated['duplicate_of_id'])) {
+            $report->duplicateOf()->associate($validated['duplicate_of_id']);
+        }
+
+        $report->save();
+
+        return $report;
     }
 
     /**

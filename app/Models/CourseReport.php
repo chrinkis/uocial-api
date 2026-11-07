@@ -18,14 +18,13 @@ class CourseReport extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * The resolved_* attributes are set explicitly when an admin resolves the report.
+     * course_id, department_id and duplicate_of_id are set through the course(), department()
+     * and duplicateOf() relations, not mass assignment. The resolved_* attributes are set
+     * explicitly when an admin resolves the report.
      *
      * @var list<string>
      */
     protected $fillable = [
-        'course_id',
-        'department_id',
-        'duplicate_of_id',
         'reason',
         'comment',
     ];

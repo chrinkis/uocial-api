@@ -10,6 +10,7 @@ use App\Models\CourseReport;
 use App\Models\Department;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -62,12 +63,7 @@ class CourseReportController extends Controller
      */
     public function store(StoreCourseReportRequest $request, Department $department, Course $course): JsonResponse
     {
-        $report = Auth::user()->courseReports()->create([
-            ...$request->validated(),
-            'course_id' => $course->id,
-        ]);
-
-        return $this->created($report);
+        return $this->created($this->build($request, course: $course));
     }
 
     /**
@@ -75,12 +71,7 @@ class CourseReportController extends Controller
      */
     public function suggest(StoreCourseReportRequest $request, Department $department): JsonResponse
     {
-        $report = Auth::user()->courseReports()->create([
-            ...$request->validated(),
-            'department_id' => $department->id,
-        ]);
-
-        return $this->created($report);
+        return $this->created($this->build($request, department: $department));
     }
 
     /**
@@ -110,6 +101,36 @@ class CourseReportController extends Controller
 
         return (new CourseReportResource($courseReport))
             ->response();
+    }
+
+    /**
+     * Create the report of the authenticated user, linking the records through the relations.
+     *
+     * @param  Course|null  $course  the reported course
+     * @param  Department|null  $department  the department a suggested new course belongs to
+     */
+    private function build(StoreCourseReportRequest $request, ?Course $course = null, ?Department $department = null): CourseReport
+    {
+        $validated = $request->validated();
+
+        $report = Auth::user()->courseReports()
+            ->make(Arr::only($validated, ['reason', 'comment']));
+
+        if ($course !== null) {
+            $report->course()->associate($course);
+        }
+
+        if ($department !== null) {
+            $report->department()->associate($department);
+        }
+
+        if (isset($validated['duplicate_of_id'])) {
+            $report->duplicateOf()->associate($validated['duplicate_of_id']);
+        }
+
+        $report->save();
+
+        return $report;
     }
 
     /**

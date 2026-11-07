@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\DepartmentReport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -61,12 +62,7 @@ class DepartmentReportController extends Controller
      */
     public function store(StoreDepartmentReportRequest $request, Department $department): JsonResponse
     {
-        $report = Auth::user()->departmentReports()->create([
-            ...$request->validated(),
-            'department_id' => $department->id,
-        ]);
-
-        return $this->created($report);
+        return $this->created($this->build($request, $department));
     }
 
     /**
@@ -74,9 +70,7 @@ class DepartmentReportController extends Controller
      */
     public function suggest(StoreDepartmentReportRequest $request): JsonResponse
     {
-        $report = Auth::user()->departmentReports()->create($request->validated());
-
-        return $this->created($report);
+        return $this->created($this->build($request));
     }
 
     /**
@@ -106,6 +100,29 @@ class DepartmentReportController extends Controller
 
         return (new DepartmentReportResource($departmentReport))
             ->response();
+    }
+
+    /**
+     * Create the report of the authenticated user, linking the records through the relations.
+     */
+    private function build(StoreDepartmentReportRequest $request, ?Department $department = null): DepartmentReport
+    {
+        $validated = $request->validated();
+
+        $report = Auth::user()->departmentReports()
+            ->make(Arr::only($validated, ['reason', 'comment']));
+
+        if ($department !== null) {
+            $report->department()->associate($department);
+        }
+
+        if (isset($validated['duplicate_of_id'])) {
+            $report->duplicateOf()->associate($validated['duplicate_of_id']);
+        }
+
+        $report->save();
+
+        return $report;
     }
 
     /**
