@@ -2,6 +2,9 @@
 
 use App\Enums\ModerationAction;
 use App\Enums\ReportReviewStatus;
+use App\Models\CourseOfferingReport;
+use App\Models\CourseReport;
+use App\Models\DepartmentReport;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\PrivacyPolicy;
@@ -47,6 +50,9 @@ it('returns the moderation counts without ban threads to moderators', function (
             'post_comments_pending_review' => 0,
             'posts_pending_reports' => 0,
             'post_comments_pending_reports' => 0,
+            'departments_pending_reports' => 0,
+            'courses_pending_reports' => 0,
+            'course_offerings_pending_reports' => 0,
         ]);
 });
 
@@ -56,7 +62,7 @@ it('returns the ban threads pending reply to admins', function () {
     $this->getJson('/api/app/moderation-counts')
         ->assertOk()
         ->assertJsonPath('ban_threads_pending_reply', 0)
-        ->assertJsonCount(5);
+        ->assertJsonCount(8);
 });
 
 it('counts posts hidden by the system until a moderator decides', function () {
@@ -162,4 +168,23 @@ it('counts only ban threads where the banned user wrote last and the thread is o
     $this->getJson('/api/app/moderation-counts')
         ->assertOk()
         ->assertJsonPath('ban_threads_pending_reply', 1);
+});
+
+it('counts the unresolved data reports of departments, courses and offerings', function () {
+    $moderator = User::factory()->moderator()->create();
+
+    DepartmentReport::factory()->count(2)->create();
+    DepartmentReport::factory()->create(['resolved_at' => now(), 'resolved_by' => $moderator->id]);
+    CourseReport::factory()->count(3)->create();
+    CourseReport::factory()->create(['resolved_at' => now(), 'resolved_by' => $moderator->id]);
+    CourseOfferingReport::factory()->create();
+    CourseOfferingReport::factory()->create(['resolved_at' => now(), 'resolved_by' => $moderator->id]);
+
+    signInForModerationCounts($moderator);
+
+    $this->getJson('/api/app/moderation-counts')
+        ->assertOk()
+        ->assertJsonPath('departments_pending_reports', 2)
+        ->assertJsonPath('courses_pending_reports', 3)
+        ->assertJsonPath('course_offerings_pending_reports', 1);
 });

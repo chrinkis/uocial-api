@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CourseOfferingReport;
+use App\Models\CourseReport;
+use App\Models\DepartmentReport;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\Scopes\NonHiddenPostCommentScope;
@@ -16,6 +19,7 @@ class ModerationCountsController extends Controller
      * Display the number of items waiting on moderators, and on admins for ban threads.
      *
      * Hidden posts and comments are included, since the items pending review are hidden by definition.
+     * The reviews data reports (departments, courses and offerings) are counted while unresolved.
      */
     public function show(): JsonResponse
     {
@@ -32,6 +36,9 @@ class ModerationCountsController extends Controller
             'post_comments_pending_reports' => PostComment::withoutGlobalScope(NonHiddenPostCommentScope::class)
                 ->pendingReports()
                 ->count(),
+            'departments_pending_reports' => DepartmentReport::unresolved()->count(),
+            'courses_pending_reports' => CourseReport::unresolved()->count(),
+            'course_offerings_pending_reports' => CourseOfferingReport::unresolved()->count(),
         ];
 
         if (Auth::user()->isAdmin()) {
