@@ -107,10 +107,10 @@ Route::prefix('app')
         Route::get('reports/departments', [DepartmentReportController::class, 'mine']);
 
         Route::get('admin/reports/departments', [DepartmentReportController::class, 'index'])
-            ->middleware(UserIsAdmin::class);
+            ->middleware(UserIsModerator::class);
 
         Route::post('admin/reports/departments/{departmentReport}/resolve', [DepartmentReportController::class, 'resolve'])
-            ->middleware(UserIsAdmin::class);
+            ->middleware(UserIsModerator::class);
 
         Route::post('departments/{department}/courses/reports', [CourseReportController::class, 'suggest'])
             ->middleware('throttle:course-reports');
@@ -122,10 +122,10 @@ Route::prefix('app')
         Route::get('reports/courses', [CourseReportController::class, 'mine']);
 
         Route::get('admin/reports/courses', [CourseReportController::class, 'index'])
-            ->middleware(UserIsAdmin::class);
+            ->middleware(UserIsModerator::class);
 
         Route::post('admin/reports/courses/{courseReport}/resolve', [CourseReportController::class, 'resolve'])
-            ->middleware(UserIsAdmin::class);
+            ->middleware(UserIsModerator::class);
 
         Route::apiResource('departments.courses', CourseController::class)
             ->only(['index', 'show'])
@@ -142,10 +142,10 @@ Route::prefix('app')
         Route::get('reports/offerings', [CourseOfferingReportController::class, 'mine']);
 
         Route::get('admin/reports/offerings', [CourseOfferingReportController::class, 'index'])
-            ->middleware(UserIsAdmin::class);
+            ->middleware(UserIsModerator::class);
 
         Route::post('admin/reports/offerings/{courseOfferingReport}/resolve', [CourseOfferingReportController::class, 'resolve'])
-            ->middleware(UserIsAdmin::class);
+            ->middleware(UserIsModerator::class);
 
         Route::apiResource('departments.courses.offerings', CourseOfferingController::class)
             ->only(['index', 'show'])

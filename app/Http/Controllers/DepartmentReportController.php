@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
 class DepartmentReportController extends Controller
 {
     /**
-     * Display a listing of all the department reports (admin).
+     * Display a listing of all the department reports (moderator or admin).
      *
      * params:
      *   - reason?: missing|duplicate|false_data|other
@@ -74,7 +74,7 @@ class DepartmentReportController extends Controller
     }
 
     /**
-     * Resolve a report (admin).
+     * Resolve a report (moderator or admin).
      *
      * params:
      *   - comment?: string

@@ -18,7 +18,7 @@ use Illuminate\Validation\Rule;
 class CourseOfferingReportController extends Controller
 {
     /**
-     * Display a listing of all the course offering reports (admin).
+     * Display a listing of all the course offering reports (moderator or admin).
      *
      * params:
      *   - reason?: missing|duplicate|false_data|other
@@ -76,7 +76,7 @@ class CourseOfferingReportController extends Controller
     }
 
     /**
-     * Resolve a report (admin).
+     * Resolve a report (moderator or admin).
      *
      * params:
      *   - comment?: string

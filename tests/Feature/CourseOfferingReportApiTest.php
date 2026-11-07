@@ -223,12 +223,16 @@ it('never exposes the reporter', function () {
     expect($response->getContent())->not->toContain($this->user->email);
 });
 
-it('only lets admins list every offering report', function () {
+it('only lets moderators and admins list every offering report', function () {
     $this->getJson('/api/app/admin/reports/offerings')->assertForbidden();
 
     Sanctum::actingAs(User::factory()->moderator()->create());
 
-    $this->getJson('/api/app/admin/reports/offerings')->assertForbidden();
+    $this->getJson('/api/app/admin/reports/offerings')->assertOk();
+
+    Sanctum::actingAs(User::factory()->admin()->create());
+
+    $this->getJson('/api/app/admin/reports/offerings')->assertOk();
 });
 
 it('filters the offering reports for the admin', function () {
@@ -258,9 +262,9 @@ it('filters the offering reports for the admin', function () {
         ->assertUnprocessable();
 });
 
-it('lets an admin resolve an offering report once', function () {
-    $admin = User::factory()->admin()->create();
-    Sanctum::actingAs($admin);
+it('lets a moderator or an admin resolve an offering report once', function (string $role) {
+    $resolver = User::factory()->$role()->create();
+    Sanctum::actingAs($resolver);
 
     $report = CourseOfferingReport::factory()->create();
 
@@ -268,16 +272,16 @@ it('lets an admin resolve an offering report once', function () {
         'comment' => 'Fixed the semester',
     ])
         ->assertOk()
-        ->assertJsonPath('data.resolved_by', $admin->id)
+        ->assertJsonPath('data.resolved_by', $resolver->id)
         ->assertJsonPath('data.resolved_comment', 'Fixed the semester');
 
     expect($report->fresh())
         ->resolved_at->not->toBeNull()
-        ->resolved_by->toBe($admin->id);
+        ->resolved_by->toBe($resolver->id);
 
     $this->postJson("/api/app/admin/reports/offerings/{$report->id}/resolve")
         ->assertConflict();
-});
+})->with(['moderator', 'admin']);
 
 it('does not let regular users resolve an offering report', function () {
     $report = CourseOfferingReport::factory()->for($this->user)->create();

@@ -174,12 +174,16 @@ it('never exposes the reporter', function () {
     expect($response->getContent())->not->toContain($this->user->email);
 });
 
-it('only lets admins list every report', function () {
+it('only lets moderators and admins list every report', function () {
     $this->getJson('/api/app/admin/reports/departments')->assertForbidden();
 
     Sanctum::actingAs(User::factory()->moderator()->create());
 
-    $this->getJson('/api/app/admin/reports/departments')->assertForbidden();
+    $this->getJson('/api/app/admin/reports/departments')->assertOk();
+
+    Sanctum::actingAs(User::factory()->admin()->create());
+
+    $this->getJson('/api/app/admin/reports/departments')->assertOk();
 });
 
 it('filters the reports for the admin', function () {
@@ -209,9 +213,9 @@ it('filters the reports for the admin', function () {
         ->assertUnprocessable();
 });
 
-it('lets an admin resolve a report once', function () {
-    $admin = User::factory()->admin()->create();
-    Sanctum::actingAs($admin);
+it('lets a moderator or an admin resolve a report once', function (string $role) {
+    $resolver = User::factory()->$role()->create();
+    Sanctum::actingAs($resolver);
 
     $report = DepartmentReport::factory()->create();
 
@@ -219,16 +223,16 @@ it('lets an admin resolve a report once', function () {
         'comment' => 'Fixed the name',
     ])
         ->assertOk()
-        ->assertJsonPath('data.resolved_by', $admin->id)
+        ->assertJsonPath('data.resolved_by', $resolver->id)
         ->assertJsonPath('data.resolved_comment', 'Fixed the name');
 
     expect($report->fresh())
         ->resolved_at->not->toBeNull()
-        ->resolved_by->toBe($admin->id);
+        ->resolved_by->toBe($resolver->id);
 
     $this->postJson("/api/app/admin/reports/departments/{$report->id}/resolve")
         ->assertConflict();
-});
+})->with(['moderator', 'admin']);
 
 it('does not let regular users resolve a report', function () {
     $report = DepartmentReport::factory()->for($this->user)->create();
