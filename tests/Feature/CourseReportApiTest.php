@@ -312,3 +312,30 @@ it('seeds a variety of course reports', function () {
         ->and(CourseReport::where('reason', DataReportReason::Missing)->whereNull('department_id')->count())->toBe(0)
         ->and(CourseReport::whereColumn('course_id', 'duplicate_of_id')->count())->toBe(0);
 });
+
+it('tells the department of the reported course', function () {
+    $course = Course::factory()->create();
+
+    $this->postJson(courseReportUrl($course), [
+        'reason' => 'other',
+        'comment' => 'Wrong',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.course.department.id', $course->department_id)
+        ->assertJsonPath('data.course.department.name', $course->department->name);
+
+    $this->getJson('/api/app/reports/courses')
+        ->assertOk()
+        ->assertJsonPath('data.0.course.department.id', $course->department_id);
+});
+
+it('tells the department of the duplicate course', function () {
+    [$course, $original] = Course::factory()->count(2)->create();
+
+    $this->postJson(courseReportUrl($course), [
+        'reason' => 'duplicate',
+        'duplicate_of_id' => $original->id,
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.duplicate_of.department.id', $original->department_id);
+});
