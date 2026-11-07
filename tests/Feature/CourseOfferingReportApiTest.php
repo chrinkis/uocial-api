@@ -321,3 +321,34 @@ it('seeds a variety of offering reports', function () {
         ->and(CourseOfferingReport::where('reason', DataReportReason::Missing)->whereNull('course_id')->count())->toBe(0)
         ->and(CourseOfferingReport::whereColumn('course_offering_id', 'duplicate_of_id')->count())->toBe(0);
 });
+
+it('tells the course and the department of the reported offering', function () {
+    $offering = CourseOffering::factory()->create();
+    $course = $offering->course;
+
+    $this->postJson(offeringReportUrl($offering), [
+        'reason' => 'other',
+        'comment' => 'Wrong',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.offering.course.id', $course->id)
+        ->assertJsonPath('data.offering.course.code', $course->code)
+        ->assertJsonPath('data.offering.course.department.id', $course->department_id)
+        ->assertJsonPath('data.offering.course.department.name', $course->department->name);
+
+    $this->getJson('/api/app/reports/offerings')
+        ->assertOk()
+        ->assertJsonPath('data.0.offering.course.department.id', $course->department_id);
+});
+
+it('tells the department of the course of a suggested offering', function () {
+    $course = Course::factory()->create();
+
+    $this->postJson(offeringSuggestUrl($course), [
+        'reason' => 'missing',
+        'comment' => 'Fall 2020 is missing',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.course.id', $course->id)
+        ->assertJsonPath('data.course.department.id', $course->department_id);
+});

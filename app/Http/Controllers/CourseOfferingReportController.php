@@ -32,7 +32,7 @@ class CourseOfferingReportController extends Controller
         ]);
 
         $reports = CourseOfferingReport::query()
-            ->with(['courseOffering', 'course', 'duplicateOf', 'resolver'])
+            ->with(['courseOffering.course.department', 'course.department', 'duplicateOf', 'resolver'])
             ->when($request->has('reason'), fn ($query) => $query
                 ->where('reason', $request->string('reason')->toString()))
             ->when($request->has('resolved'), fn ($query) => $request->boolean('resolved')
@@ -51,7 +51,7 @@ class CourseOfferingReportController extends Controller
     public function mine(): JsonResponse
     {
         $reports = Auth::user()->courseOfferingReports()
-            ->with(['courseOffering', 'course', 'duplicateOf'])
+            ->with(['courseOffering.course.department', 'course.department', 'duplicateOf'])
             ->orderByDesc('id')
             ->paginate(8);
 
@@ -98,7 +98,7 @@ class CourseOfferingReportController extends Controller
         $courseOfferingReport->resolved_comment = $validated['comment'] ?? null;
         $courseOfferingReport->save();
 
-        $courseOfferingReport->load(['courseOffering', 'course', 'duplicateOf', 'resolver']);
+        $courseOfferingReport->load(['courseOffering.course.department', 'course.department', 'duplicateOf', 'resolver']);
 
         return (new CourseOfferingReportResource($courseOfferingReport))
             ->response();
@@ -139,7 +139,7 @@ class CourseOfferingReportController extends Controller
      */
     private function created(CourseOfferingReport $report): JsonResponse
     {
-        $report->load(['courseOffering', 'course', 'duplicateOf']);
+        $report->load(['courseOffering.course.department', 'course.department', 'duplicateOf']);
 
         return (new CourseOfferingReportResource($report))
             ->response()
