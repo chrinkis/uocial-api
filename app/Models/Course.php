@@ -45,6 +45,16 @@ class Course extends Model
     }
 
     /**
+     * The reports made about the course.
+     *
+     * @return HasMany<CourseReport, $this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(CourseReport::class);
+    }
+
+    /**
      * The latest offering of the course.
      *
      * @return HasOne<CourseOffering, $this>

@@ -1,0 +1,16 @@
+meta {
+  name: my reports
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{api}}/app/reports/courses
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

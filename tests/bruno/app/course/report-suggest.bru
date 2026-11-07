@@ -1,0 +1,21 @@
+meta {
+  name: suggest new
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{api}}/app/departments/1/courses/reports
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  reason: missing
+  comment: Linear Algebra III is missing
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

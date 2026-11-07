@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseOfferingController;
+use App\Http\Controllers\CourseReportController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DepartmentReportController;
 use App\Http\Controllers\InstructorController;
@@ -108,6 +109,21 @@ Route::prefix('app')
             ->middleware(UserIsAdmin::class);
 
         Route::post('admin/reports/departments/{departmentReport}/resolve', [DepartmentReportController::class, 'resolve'])
+            ->middleware(UserIsAdmin::class);
+
+        Route::post('departments/{department}/courses/reports', [CourseReportController::class, 'suggest'])
+            ->middleware('throttle:course-reports');
+
+        Route::post('departments/{department}/courses/{course}/reports', [CourseReportController::class, 'store'])
+            ->scopeBindings()
+            ->middleware('throttle:course-reports');
+
+        Route::get('reports/courses', [CourseReportController::class, 'mine']);
+
+        Route::get('admin/reports/courses', [CourseReportController::class, 'index'])
+            ->middleware(UserIsAdmin::class);
+
+        Route::post('admin/reports/courses/{courseReport}/resolve', [CourseReportController::class, 'resolve'])
             ->middleware(UserIsAdmin::class);
 
         Route::apiResource('departments.courses', CourseController::class)
