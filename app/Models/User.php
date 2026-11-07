@@ -201,6 +201,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(CourseReport::class);
     }
 
+    /**
+     * The course offering reports that user has created.
+     *
+     * @return HasMany<CourseOfferingReport,$this>
+     */
+    public function courseOfferingReports(): HasMany
+    {
+        return $this->hasMany(CourseOfferingReport::class);
+    }
+
     public function isModerator(): bool
     {
         return $this->role === UserRole::Admin || $this->role === UserRole::Moderator;

@@ -109,6 +109,25 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('offering-reports', function (Request $request) {
+            assert($request->user() !== null);
+
+            // Suggestions share one bucket per course; reports one bucket per offering.
+            // The route binding may not have run yet, so the parameters can still be raw ids.
+            $offering = $request->route('offering');
+            $course = $request->route('course');
+            $target = $offering !== null
+                ? (is_object($offering) ? $offering->getKey() : $offering)
+                : 'new:'.(is_object($course) ? $course->getKey() : $course);
+
+            return [
+                Limit::perHour(3)
+                    ->by($request->user()->id.':offering-report:'.$target),
+                Limit::perHour(30)
+                    ->by($request->user()->id.':offering-reports'),
+            ];
+        });
+
         RateLimiter::for('login', function (Request $request) {
             $email = $request->input('email', '');
             assert(is_string($email));

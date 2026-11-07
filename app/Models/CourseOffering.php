@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $year Academic start year (e.g. 2025 for the 2025–26 academic year).
@@ -49,6 +50,16 @@ class CourseOffering extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    /**
+     * The reports made about the offering.
+     *
+     * @return HasMany<CourseOfferingReport, $this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(CourseOfferingReport::class);
     }
 
     /**

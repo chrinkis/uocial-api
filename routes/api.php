@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BanThreadController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseOfferingController;
+use App\Http\Controllers\CourseOfferingReportController;
 use App\Http\Controllers\CourseReportController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DepartmentReportController;
@@ -129,6 +130,22 @@ Route::prefix('app')
         Route::apiResource('departments.courses', CourseController::class)
             ->only(['index', 'show'])
             ->scoped();
+
+        Route::post('departments/{department}/courses/{course}/offerings/reports', [CourseOfferingReportController::class, 'suggest'])
+            ->scopeBindings()
+            ->middleware('throttle:offering-reports');
+
+        Route::post('departments/{department}/courses/{course}/offerings/{offering}/reports', [CourseOfferingReportController::class, 'store'])
+            ->scopeBindings()
+            ->middleware('throttle:offering-reports');
+
+        Route::get('reports/offerings', [CourseOfferingReportController::class, 'mine']);
+
+        Route::get('admin/reports/offerings', [CourseOfferingReportController::class, 'index'])
+            ->middleware(UserIsAdmin::class);
+
+        Route::post('admin/reports/offerings/{courseOfferingReport}/resolve', [CourseOfferingReportController::class, 'resolve'])
+            ->middleware(UserIsAdmin::class);
 
         Route::apiResource('departments.courses.offerings', CourseOfferingController::class)
             ->only(['index', 'show'])

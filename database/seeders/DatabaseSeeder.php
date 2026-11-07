@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             UserBanMessageSeeder::class,
             DepartmentReportSeeder::class,
             CourseReportSeeder::class,
+            CourseOfferingReportSeeder::class,
         ]);
     }
 }
